@@ -1,0 +1,11 @@
+= About
+
+The Serverless Workflow project defines a vendor-neutral and declarative workflow language, targeting the Serverless computing technology domain.
+
+== Status of this document
+
+This document represents the current state of the specification.
+It includes all features so far released as well as all features planned to be added in the next release.
+
+You can find all specification releases link:{spec_releases_url}[here].
+You can find the specification roadmap link:{spec_repo_versioned_url}/roadmap/README.md[here].

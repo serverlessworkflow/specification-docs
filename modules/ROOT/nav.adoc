@@ -1,0 +1,72 @@
+* xref:overview.adoc[]
+* xref:spec/specification_details.adoc[]
+** xref:spec/data/workflow_data.adoc[]
+*** xref:spec/data/state_data_filters.adoc[]
+*** xref:spec/data/action_data_filters.adoc[]
+*** xref:spec/data/event_data_filters.adoc[]
+*** xref:spec/data/multiple_data_filters.adoc[]
+*** xref:spec/data/data_merging.adoc[]
+** xref:spec/functions/workflow_functions.adoc[]
+*** RESTFul
+*** Async API 
+*** gRPC
+*** GraphQL
+*** OData
+*** Expressions
+*** Custom Functions
+** xref:spec/workflow_expressions.adoc[]
+** Workflow Definition Structure
+*** Workflow States
+**** Event
+**** Operation
+**** Switch
+**** Parallel
+**** Inject
+**** ForEach
+**** Callback
+*** Related Stated Definitions
+**** Function Definition
+**** Event Definition
+**** Auth Definition
+**** Correlation Definition
+**** OnEvents Definition
+**** Action Definition
+**** Subflow Action
+**** FunctionRef Definition
+**** EventRef Definition
+**** SubFlowRef Definition
+**** Error Definitinition
+**** Retry Definition
+**** Transition Definition
+**** Switch State Event Conditions
+**** Parallel State Branch
+**** Parallel State Handling Exceptions
+**** Start Definition
+**** Schedule Definition
+**** Cron Definition
+**** End Definition
+**** ProducedEvent Definition
+**** Transitions
+**** Additional Properties
+** xref:spec/errors.adoc[]
+** xref:spec/action_retries.adoc[]
+** xref:spec/workflow_timeouts.adoc[]
+** xref:spec/compensation.adoc[]
+** xref:spec/continue_as.adoc[]
+** xref:spec/versioning.adoc[]
+** xref:spec/constants.adoc[]
+** xref:spec/secrets.adoc[]
+** xref:spec/metadata.adoc[]
+* xref:extensions:index.adoc[]
+* xref:usecases:index.adoc[]
+* xref:examples:index.adoc[]
+* xref:comparisions:index.adoc[]
+* xref:references:index.adoc[]
+* xref:license.adoc[]
+// Create them in other GH repos
+* SDKs
+** Go SDK
+** Java SDK
+** .NET SDK
+** Typescript SDK
+** Python SDK

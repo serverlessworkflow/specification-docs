@@ -1,0 +1,23 @@
+name: specification
+title: "CNCF Serverless Workflow Specification"
+version: 0.8.0
+start_page: index.adoc
+nav:
+  - "modules/ROOT/nav.adoc"
+asciidoc:
+  attributes:
+    spec_repo_versioned_url: https://github.com/serverlessworkflow/specification/blob/main
+    spec_releases_url: https://github.com/serverlessworkflow/specification/releases 
+    cloudevents_url: https://cloudevents.io/
+    openapi_url: https://www.openapis.org/
+    grpc_url: https://grpc.io/
+    graphql_url: https://graphql.org/
+    json_url: https://www.json.org/json-en.html
+    yaml_url: https://yaml.org/
+    go_sdk_url: https://github.com/serverlessworkflow/sdk-go
+    java_sdk_url: https://github.com/serverlessworkflow/sdk-java
+    dotnet_sdk_url: https://github.com/serverlessworkflow/sdk-net
+    typescript_sdk_url: https://github.com/serverlessworkflow/sdk-typescript
+    python_sdk_url: https://github.com/serverlessworkflow/sdk-python
+    
+

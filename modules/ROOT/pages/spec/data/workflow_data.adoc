@@ -1,0 +1,50 @@
+= Workflow Data
+
+Serverless Workflow data is represented in link:{json_url}[JSON] format. Data flow and execution logic go hand in hand, meaning as workflow execution follows the workflow definition logic, so does the workflow data:
+
+image::spec/workflowdataflow.png[]
+
+The initial xref:#data_input[workflow data input] is passed to the workflow starting state as its data input. When a state finishes its execution, xref:#info_passing_between_states[its data output is passed as data input to the next state] that should be executed.
+
+When workflow execution ends, the last executed workflow state's data output becomes the final xref:#data_output[].
+
+States can filter their data inputs and outputs using xref:spec/data/state_data_filters.adoc[].
+
+States can also consume events as well as invoke services. These event payloads and service invocation results can be filtered using xref:spec/data/event_data_filters.adoc[] and xref:spec/data/action_data_filters.adoc[].
+
+Data filters use xref:spec/workflow_expressions.adoc[workflow expressions] for selecting and manipulating state data input and output, action inputs and results, and event payloads.
+
+Multiple filters can be combined to gain high level of control of your workflow state data. You can find an example of that in xref:spec/data/multiple_data_filters.adoc[this] section.
+
+Data from consumed events,and action execution results are added/merged to state data. Reference xref:spec/data/data_merging.adoc[the data merging section] to learn about the merging rules that should be applied.
+
+[[data_input]]
+== Workflow Data Input
+
+:javascript_object_url: https://www.rfc-editor.org/rfc/rfc7159#section-4
+
+The initial data input into a workflow instance. Must be a valid link:{javascript_object_url}[JSON] object. If no input is provided, the default data input should be an empty JSON object:
+
+[source,json]
+----
+{ }
+----
+
+Workflow data input is passed to the workflow starting state as its data input.
+
+image::spec/workflowdatainput.png[]
+
+[[info_passing_between_states]]
+== Information Passing Between States
+
+States in a workflow can receive data (data input) and produce a data result (data output). The state's data input is typically the previous state's data output. When a state completes its execution, its data output is passed to the state's data input it transitions to. There are two rules to consider here:
+
+- If the state is the workflow starting state, its data input is the xref:#data_input[workflow data input].
+- When workflow execution ends, the data output of the last executed state becomes the xref:#data_output[workflow data output].
+
+image::spec/basic-state-data-passing.png[]
+
+[[data_output]]
+== Workflow Data Output
+
+Each workflow execution should produce a data output. The workflow data output is the data output of the last executed workflow state.

@@ -1,0 +1,36 @@
+= Specification Details
+
+This chapter provides detailed descriptions of all parts of the Serverless Workflow language.
+
+== Workflow Definition
+
+A workflow definition is a JSON or YAML file that conforms to the Serverless Workflow specification DSL. It consists of the core xref:spec/structure/workflow_definition_structure.adoc[] and the xref:spec/workflow_model.adoc[] It defines a blueprint used by runtimes for its execution.
+
+A business solution can be composed of any number of related workflow definitions. Their relationships are explicitly modeled with the Serverless Workflow language (for example by using xref:spec/structure/state_definitions/subflowref.adoc[] in actions).
+
+Runtimes can initialize workflow definitions for some particular set of data inputs or events.
+
+== Workflow Instance
+
+A workflow instance represents a single workflow execution corresponding to the instructions provided by a workflow definition. A workflow instance can be short or long-running. A single workflow instance should be isolated, meaning it should not share state and data with other workflow instances. Workflow instances should be able to communicate with each other via events.
+
+Depending on their workflow definition, workflow instances can be short-lived or can execute for days, weeks, or years.
+
+Each workflow instances should have its unique identifier, which should remain unchanged throughout its execution.
+
+Workflow instances can be started providing some data input. This is described in detail in the xref:spec/data/workflow_data.adoc#data_input[workflow data input] section. Workflow instances can also wait for examples to start their execution, which is the case where a workflow definition contains a xref:spec/structure/states/event.adoc[] starting workflow state.
+
+The workflow definition also explicitly defines when a workflow instance should be completed. By default, instances should be completed once there are no active workflow paths (all active paths reach a state containing the default xref:spec/structure/state_definitions/end_definition.adoc[end definition]), or if the defined xref:spec/workflow_timeouts.adoc[`workflowExecTimeout`] time is reached. Other ways, such as using the `terminate` property of the xref:spec/structure/state_definitions/end_definition.adoc[end definition] to terminate instance execution, or defining an xref:spec/workflow_timeouts.adoc[`workflowExecTimeout`] property are also possible.
+
+For long-running workflow-executions, you can utilize the `keepActive` workflow property which provides more control as to when exactly to terminate workflow execution. In cases where a workflow execution should be continued as a new one, the DSL also provides the `continueAs` property which is described in detail in the xref:spec/continue_as.adoc[Continuing a new Execution] section.
+
+== Workflow Model
+
+The Serverless Workflow language is composed of:
+
+- xref:spec/functions/workflow_functions.adoc[Function definitions] - Reusable functions that can declare services that need to be invoked, or expressions to be evaluated.
+- xref:spec/structure/state_definitions/event.adoc[Event definitions] - Reusable declarations of events that need to be consumed to start or continue workflow instances, trigger function/service execution, or be produced during workflow execution.
+- xref:spec/structure/state_definitions/retry.adoc[Retry definitions] - Reusable retry definitions. Can specify retry strategies for service invocations during workflow execution.
+- xref:spec/workflow_timeouts.adoc[Timeout definitions] - Reusable timeout definitions. Can specify default workflow execution timeout, as well as workflow state, action, and branch execution timeouts.
+- xref:spec/errors.adoc[Errors definition] - Reusable error definitions. Provide domain-specific error definitions which can be referenced in workflow states error handling.
+- xref:spec/structure/states/workflow_states.adoc[State definitions] - Definition of states, the building blocks of workflow control flow logic. States can reference the reusable function, event and retry definitions.
