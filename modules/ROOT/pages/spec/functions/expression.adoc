@@ -1,0 +1,113 @@
+= Using Functions for Expression Evaluation
+
+In addition to defining RESTful, AsyncAPI, RPC, GraphQL and OData services and their operations, workflow xref:spec/structure/state_definitions/function.adoc[function definitions] can also be used to define expressions that should be evaluated during workflow execution.
+
+Defining expressions as part of function definitions has the benefit of being able to reference them by their logical name through workflow states where expression evaluation is required.
+
+Expression functions must declare their type parameter to be expression.
+
+Let's take a look at an example of such definitions:
+
+[source,json]
+----
+{
+"functions": [
+  {
+    "name": "isAdult",
+    "operation": ".applicant | .age >= 18",
+    "type": "expression"
+  },
+  {
+    "name": "isMinor",
+    "operation": ".applicant | .age < 18",
+    "type": "expression"
+  }
+]}
+----
+
+Here we define two reusable expression functions. Expressions in Serverless Workflow can be evaluated against the workflow, or workflow state data. Note that different data filters play a big role as to which parts of the workflow data are being evaluated by the expressions. Reference the xref:spec/data/state_data_filters.adoc[State Data Filters] section for more information on this.
+
+Our expression function definitions can now be referenced by workflow states when they need to be evaluated. For example:
+
+[source,json]
+----
+{
+"states":[
+  {
+     "name":"CheckApplicant",
+     "type":"switch",
+     "dataConditions": [
+        {
+          "name": "Applicant is adult",
+          "condition": "${ fn:isAdult }",
+          "transition": "ApproveApplication"
+        },
+        {
+          "name": "Applicant is minor",
+          "condition": "${ fn:isMinor }",
+          "transition": "RejectApplication"
+        }
+     ],
+     "defaultCondition": {
+        "transition": "RejectApplication"
+     }
+  }
+]}
+----
+
+Our expression functions can also be referenced and executed as part of state  xref:spec/structure/state_definitions/action.adoc[action] execution. Let's say we have the following workflow definition:
+
+[source,json]
+----
+{
+    "name": "simpleadd",
+    "functions": [
+        {
+            "name": "Increment Count Function",
+            "type": "expression",
+            "operation": ".count += 1 | .count"
+        }
+    ],
+    "start": "Initialize Count",
+    "states": [
+        {
+            "name": "Initialize Count",
+            "type": "inject",
+            "data": {
+                "count": 0
+            },
+            "transition": "Increment Count"
+        },
+        {
+            "name": "Increment Count",
+            "type": "operation",
+            "actions": [
+                {
+                    "functionRef": "Increment Count Function",
+                    "actionFilter": {
+                        "toStateData": "${ .count }"
+                    }
+                }
+            ],
+            "end": true
+        }
+    ]
+}
+----
+
+The starting xref:/spec/structure/states/inject.adoc[inject state] "Initialize Count" injects the count element into our state data, which then becomes the state data input of our "Increment Count" xref:/spec/structure/states/operation.adoc[operation state]. This state defines an invocation of the "Increment Count Function" expression function defined in our workflow definition.
+
+This triggers the evaluation of the defined expression. The input of this expression is by default the current state data. Just like with "rest", and "rpc" type functions, expression functions also produce a result. In this case the result of the expression is just the number 1. The actions filter then assigns this result to the state data element "count" and the state data becomes:
+
+[source,json]
+----
+{
+    "count": 1
+}
+----
+
+Note that the used function definition type in this case must be expression.
+
+For more information about functions, reference the xref:spec/structure/state_definitions/function.adoc[Function Definitions] section.
+
+For more information about workflow expressions, reference the xref:spec/workflow_expressions.adoc[Workflow Expressions] section.

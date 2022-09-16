@@ -1,0 +1,47 @@
+= Using Functions for OData Service Invocations
+
+Similar to defining invocations of operations on GraphQL services, you can also use workflow xref:spec/structure/state_definitions/function.adoc[Function Definitions] to execute complex queries on an link:{odata_url}[OData] service.
+
+== Creating an OData Function Definition
+
+We start off by creating a workflow xref:spec/structure/state_definitions/function.adoc[Function Definitions]. For example:
+
+[source,json]
+----
+{
+"functions": [
+  {
+    "name": "queryPersons",
+    "operation": "https://services.odata.org/V3/OData/OData.svc#Persons",
+    "type": "odata"
+  }
+]}
+----
+
+Note that the `operation` property must follow the following format:
+
+[source,json]
+----
+<URI_to_odata_service>#<Entity_Set_Name>
+----
+
+== Invoking an OData Function Definition
+
+In order to invoke the defined link:{odata_url}[OData] function, simply reference it in a workflow xref:spec/structure/state_definitions/action.adoc[Action Definition] and set its function arguments. For example:
+
+[source,json]
+----
+{
+  "refName": "queryPersons",
+  "arguments": {
+    "queryOptions":{
+      "expand": "PersonDetail/Person",
+      "select": "Id, PersonDetail/Person/Name",
+      "top": 5,
+      "orderby": "PersonDetail/Person/Name"
+    }
+  }
+}
+----
+
+In order to ensure compatibility of OData support across runtimes, the `arguments` property of an link:{odata_url}[OData] function reference should follow the Serverless Workflow link:{spec_repo_versioned_url}/schema/odata.json[OData Json schema].

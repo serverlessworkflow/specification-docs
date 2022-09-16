@@ -1,1 +1,198 @@
 = Data Merging
+
+Consumed event data (payload) and action execution results should be merged into the state data. Event and action data filters can be used to give more details about this operation.
+
+By default, with no data filters specified, when an event is consumed, its entire data section (payload) should be merged to the state data. Merging should be applied to the entire state data JSON element.
+
+In case of event and action filters, their "toStateData" property can be defined to select a specific element of the state data with which merging should be done against. If this element does not exist, a new one should be created first.
+
+When merging, the state data element and the data (payload)/action result should have the same type, meaning that you should not merge arrays with objects or objects with arrays etc.
+
+When merging elements of type object should be done by inserting all the key-value pairs from both objects into a single combined object. If both objects contain a value for the same key, the object of the event data/action results should "win". To give an example, let's say we have the following state data:
+
+[source,json]
+----
+{
+    "customer": {
+        "name": "John",
+        "address": "1234 street",
+        "zip": "12345"
+    }
+}
+----
+
+and we have the following event payload that needs to be merged into the state data:
+
+[source,json]
+----
+{
+    "customer": {
+        "name": "John",
+        "zip": "54321"
+    }
+}
+----
+
+After merging the state data should be:
+
+[source,json]
+----
+{
+  "customer": {
+    "name": "John",
+    "address": "1234 street",
+    "zip": "54321"
+  }
+}
+----
+
+Merging array types should be done by concatenating them into a larger array including unique elements of both arrays. To give an example, merging:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "John",
+        "address": "1234 street",
+        "zip": "12345"
+      },
+      {
+        "name": "Jane",
+        "address": "4321 street",
+        "zip": "54321"
+      }
+    ]
+}
+----
+
+into state data:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "Michael",
+        "address": "6789 street",
+        "zip": "6789"
+      }
+    ]
+}
+----
+
+should produce state data:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "Michael",
+        "address": "6789 street",
+        "zip": "6789"
+      },
+      {
+        "name": "John",
+        "address": "1234 street",
+        "zip": "12345"
+      },
+      {
+        "name": "Jane",
+        "address": "4321 street",
+        "zip": "54321"
+      }
+    ]
+}
+----
+
+To give an example, merging:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "John",
+        "address": "1234 street",
+        "zip": "12345"
+      },
+      {
+        "name": "Jane",
+        "address": "4321 street",
+        "zip": "54321"
+      }
+    ]
+}
+----
+
+into state data:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "Michael",
+        "address": "6789 street",
+        "zip": "6789"
+      }
+    ]
+}
+----
+
+should produce state data:
+
+[source,json]
+----
+{
+    "customers": [
+      {
+        "name": "Michael",
+        "address": "6789 street",
+        "zip": "6789"
+      },
+      {
+        "name": "John",
+        "address": "1234 street",
+        "zip": "12345"
+      },
+      {
+        "name": "Jane",
+        "address": "4321 street",
+        "zip": "54321"
+      }
+    ]
+}
+----
+
+Merging number types should be done by overwriting the data from events data/action results into the merging element of the state data. For example merging action results:
+
+[source,json]
+----
+{
+    "age": 30
+}
+----
+
+into state data:
+
+[source,json]
+----
+{
+    "age": 20
+}
+----
+
+would produce state data:
+
+[source,json]
+----
+{
+    "age": 30
+}
+----
+
+Merging string types should be done by overwriting the data from events data/action results into the merging element of the state data.
+
+Merging number types should be done by overwriting the data from events data/action results into the merging element of the state data.

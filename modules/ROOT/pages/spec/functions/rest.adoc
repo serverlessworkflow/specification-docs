@@ -1,0 +1,44 @@
+= Using functions for RESTful service invocations
+
+xref:spec/structure/state_definitions/function.adoc[Functions] can be used to describe services and their operations that need to be invoked during workflow execution. They can be referenced by states xref:spec/structure/state_definitions/action.adoc[action definitions] to clearly define when the service operations should be invoked during workflow execution, as well as the data parameters passed to them if needed.
+
+Note that with Serverless Workflow, we can also define invocation of services which are triggered via an event. To learn more about that, please reference the xref:spec/structure/state_definitions/event.adoc[event definitions] section, as well as the xref:spec/structure/state_definitions/action.adoc[actions definitions] xref:spec/structure/state_definitions/eventref.adoc[eventRef] property.
+
+Because of an overall lack of a common way to describe different services and their operations, many workflow languages typically chose to define custom function definitions. This approach, however, often runs into issues such as lack of portability, limited capabilities, as well as forcing non-workflow-specific information, such as service authentication, to be added inside the workflow language.
+
+To avoid these issues, the Serverless Workflow specification mandates that details about RESTful services and their operations be described using the link:{openapi_url}[OpenAPI Specification specification]. OpenAPI is a language-agnostic standard that describes discovery of RESTful services. This allows Serverless Workflow language to describe RESTful services in a portable way, as well as workflow runtimes to utilize OpenAPI tooling and APIs to invoke service operations.
+
+Here is an example function definition for a RESTful service operation.
+
+[source,json]
+----
+{
+"functions": [
+  {
+    "name": "sendOrderConfirmation",
+    "operation": "file://confirmationapi.json#sendOrderConfirmation"
+  }]
+}
+----
+
+It can, as previously mentioned be referenced during workflow execution when the invocation of this service is desired. For example:
+
+[source,json]
+----
+{
+  "states": [
+  {
+      "name":"SendConfirmState",
+      "type":"operation",
+      "actions":[
+       {
+       "functionRef": "sendOrderConfirmation"
+      }],
+      "end": true
+  }]
+}
+----
+
+Note that the referenced function definition type in this case must be `rest` (default type).
+
+For more information about functions, reference the xref:spec/structure/state_definitions/function.adoc[Functions definitions] section.

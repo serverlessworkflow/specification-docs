@@ -1,1 +1,62 @@
 = Event Data Filters
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|useData
+|If set to false, event payload is not added/merged to state data. In this case `data` and `toStateData` should be ignored. Default is true.	
+|boolean
+|no
+
+|data
+|Workflow expression that filters the event data (payload)		
+|string
+|no
+
+|toStateData
+|Workflow expression that selects a state data element to which the action results should be added/merged into. If not specified denotes the top-level state data element		
+|string
+|no
+|===
+
+.Event Data Filters Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+eventDataFilter:
+  data: "${ .data.results }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "eventDataFilter": {
+       "data": "${ .data.results }"
+    }
+}
+----
+--
+====
+
+Event data filters can be used to filter consumed event payloads. They can be used to:
+
+- Filter the event payload to select only the data that should be added/merged into the state data using its data property.
+- Select the part of state data into which the event payload should be added/merged into using the toStateData property.
+
+Allows event data to be filtered and added to or merged with the state data. All events have to be in the CloudEvents format and event data filters can filter both context attributes and the event payload (data) using the data property.
+
+Here is an example using an event filter:
+
+image:spec/event-data-filter-example1.png[]
+
+Note that the data input to the Event data filters depends on the `dataOnly` property of the associated xref:spec/structure/state_definitions/event.adoc[Event definition]. If this property is not defined (has default value of `true`), Event data filter expressions are evaluated against the event payload (the CloudEvents `data` attribute only). If it is set to `false`, the expressions should be evaluated against the entire CloudEvent (including its context attributes).
+
+In the case event data/payload should not be added/merged to state data, we can set the `useData` property to `false`. In this case, the `data` and `toStateData` properties should be ignored, and nothing is added/merged to state data. If `useData` is not specified (or it's value set to `true`), event payload, if available, should be added/merged to state data.

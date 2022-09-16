@@ -7,13 +7,13 @@
 *** xref:spec/data/multiple_data_filters.adoc[]
 *** xref:spec/data/data_merging.adoc[]
 ** xref:spec/functions/workflow_functions.adoc[]
-*** RESTFul
-*** Async API 
-*** gRPC
-*** GraphQL
-*** OData
-*** Expressions
-*** Custom Functions
+*** xref:spec/functions/rest.adoc[RESTFul]
+*** xref:spec/functions/async.adoc[Async API]
+*** xref:spec/functions/grpc.adoc[gRPC]
+*** xref:spec/functions/graphql.adoc[GraphQL]
+*** xref:spec/functions/odata.adoc[OData]
+*** xref:spec/functions/expression.adoc[Expressions]
+*** xref:spec/functions/custom.adoc[Custom Functions]
 ** xref:spec/workflow_expressions.adoc[]
 ** Workflow Definition Structure
 *** Workflow States

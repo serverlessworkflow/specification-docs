@@ -1,0 +1,206 @@
+= Using multiple data filters
+
+As xref:spec/structure/states/event.adoc[Event states] can take advantage of all defined data filters. In the example below, we define a workflow with a single event state and show how data filters can be combined.
+
+.Example of a workflow with a single event state and data filters combined
+[source,json]
+----
+{
+    "id": "GreetCustomersWorkflow",
+    "name": "Greet Customers when they arrive",
+    "version": "1.0",
+    "specVersion": "0.8",
+    "start": "WaitForCustomerToArrive",
+    "states":[
+         {
+            "name": "WaitForCustomerToArrive",
+            "type": "event",
+            "onEvents": [{
+                "eventRefs": ["CustomerArrivesEvent"],
+                "eventDataFilter": {
+                    "data": "${ .customer }",
+                    "toStateData": "${ .customerInfo }"
+                },
+                "actions":[
+                    {
+                        "functionRef": {
+                            "refName": "greetingFunction",
+                            "arguments": {
+                                "greeting": "${ .spanish } ",
+                                "customerName": "${ .customerInfo.name } "
+                            }
+                        },
+                        "actionDataFilter": {
+                            "fromStateData": "${ .hello }",
+                            "results": "${ .greetingMessageResult }",
+                            "toStateData": "${ .finalCustomerGreeting }"
+                        }
+                    }
+                ]
+            }],
+            "stateDataFilter": {
+                "input": "${ .greetings } ",
+                "output": "${ .finalCustomerGreeting }"
+            },
+            "end": true
+        }
+    ],
+    "events": [{
+        "name": "CustomerArrivesEvent",
+        "type": "customer-arrival-type",
+        "source": "customer-arrival-event-source"
+     }],
+    "functions": [{
+        "name": "greetingFunction",
+        "operation": "http://my.api.org/myapi.json#greeting"
+    }]
+}
+----
+
+The workflow data input when starting workflow execution is assumed to include greetings in different languages:
+
+[source,json]
+----
+{
+  "greetings": {
+      "hello": {
+        "english": "Hello",
+        "spanish": "Hola",
+        "german": "Hallo",
+        "russian": "Здравствуйте"
+      },
+      "goodbye": {
+        "english": "Goodbye",
+        "spanish": "Adiós",
+        "german": "Auf Wiedersehen",
+        "russian": "Прощай"
+      }
+  }
+}
+----
+
+The workflow data input then becomes the data input of the starting workflow state.
+
+We also assume for this example that the CloudEvent that our event state consumes include the data (payload):
+
+[source,json]
+----
+{
+ "customer": {
+   "name": "John Michaels",
+   "address": "111 Some Street, SomeCity, SomeCountry",
+   "age": 40
+ }
+}
+----
+
+Here is a sample diagram showing our workflow, each numbered step on this diagram shows a certain defined point during workflow execution at which data filters are invoked and correspond to the numbered items below.
+
+image:spec/using-multiple-filters-example.png[]
+
+**(1) Workflow execution starts:** Workflow data is passed to our "WaitForCustomerToArrive" event state as data input. Workflow executes its starting state, namely the "WaitForCustomerToArrive" event state.
+
+The event state `stateDataFilter` is invoked to filter its data input. The filters "input" expression is evaluated and selects only the "greetings" data. The rest of the state data input should be disregarded.
+
+At this point our state data should be:
+
+[source,json]
+----
+{
+  "hello": {
+    "english": "Hello",
+    "spanish": "Hola",
+    "german": "Hallo",
+    "russian": "Здравствуйте"
+  },
+  "goodbye": {
+    "english": "Goodbye",
+    "spanish": "Adiós",
+    "german": "Auf Wiedersehen",
+    "russian": "Прощай"
+  }
+}
+----
+
+**(2) CloudEvent of type "customer-arrival-type" is consumed:** Once the event is consumed, the "eventDataFilter" is triggered. Its "data" expression selects the "customer" object from the events data. The "toStateData" expression says that we should add/merge this selected event data to the state data in its "customerInfo" property. If this property exists it should be merged, if it does not exist, one should be created.
+
+At this point our state data contains:
+
+[source,json]
+----
+{
+  "hello": {
+      "english": "Hello",
+      "spanish": "Hola",
+      "german": "Hallo",
+      "russian": "Здравствуйте"
+    },
+    "goodbye": {
+      "english": "Goodbye",
+      "spanish": "Adiós",
+      "german": "Auf Wiedersehen",
+      "russian": "Прощай"
+    },
+    "customerInfo": {
+       "name": "John Michaels",
+       "address": "111 Some Street, SomeCity, SomeCountry",
+       "age": 40
+     }
+}
+----
+
+**(3) Event state performs its actions:** Before the first action is executed, its actionDataFilter is invoked. Its "fromStateData" expression filters the current state data to select from its data that should be available to action arguments. In this example it selects the "hello" property from the current state data. At this point the action is executed. We assume that for this example "greetingFunction" returns:
+
+[source,json]
+----
+{
+   "execInfo": {
+     "execTime": "10ms",
+     "failures": false
+   },
+   "greetingMessageResult": "Hola John Michaels!"
+}
+----
+
+After the action is executed, the actionDataFilter "results" expression is evaluated to filter the results returned from the action execution. In this case, we select only the "greetingMessageResult" element from the results.
+
+The action filters "toStateData" expression then defines that we want to add/merge this action result to state data under the "finalCustomerGreeting" element.
+
+At this point, our state data contains:
+
+[source,json]
+----
+{
+  "hello": {
+      "english": "Hello",
+      "spanish": "Hola",
+      "german": "Hallo",
+      "russian": "Здравствуйте"
+    },
+    "goodbye": {
+      "english": "Goodbye",
+      "spanish": "Adiós",
+      "german": "Auf Wiedersehen",
+      "russian": "Прощай"
+    },
+    "customerInfo": {
+       "name": "John Michaels",
+       "address": "111 Some Street, SomeCity, SomeCountry",
+       "age": 40
+     },
+     "finalCustomerGreeting": "Hola John Michaels!"
+}
+----
+
+**(4) Event State Completes Execution:**
+
+When our event state finishes its execution, the states "stateDataFilter" "output" filter expression is executed to filter the state data to create the final state data output.
+
+Because our event state is also an end state, its xref:spec/data/workflow_data.adoc#data_output[data output] becomes the final workflow data output. Namely:
+
+[source,json]
+----
+{
+   "finalCustomerGreeting": "Hola John Michaels!"
+}
+----

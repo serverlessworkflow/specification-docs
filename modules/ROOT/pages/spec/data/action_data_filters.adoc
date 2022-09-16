@@ -1,1 +1,143 @@
 = Action Data Filters
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|fromStateData
+|Workflow expression that filters state data that can be used by the action
+|string
+|no
+
+|useResults
+|If set to false, action data results are not added/merged to state data. In this case `results` and `toStateData` should be ignored. Default is true.	
+|boolean
+|no
+
+|results
+|Workflow expression that filters the actions data results	
+|string
+|no
+
+|toStateData
+|Workflow expression that selects a state data element to which the action results should be added/merged into. If not specified denotes the top-level state data element	
+|string
+|no
+|===
+
+.Action Data Filters Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+actionDataFilter:
+  fromStateData: "${ .language }"
+  results: "${ .results.greeting }"
+  toStateData: "${ .finalgreeting }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+  "actionDataFilter": {
+    "fromStateData": "${ .language }",
+    "results": "${ .results.greeting }",
+    "toStateData": "${ .finalgreeting }"
+  }
+}
+----
+--
+====
+
+Action data filters can be used inside xref:spec/structure/state_definitions/action.adoc[Action definitions]. Each action can define this filter which can:
+
+- Filter the state data to select only the data that can be used within function definition arguments using its fromStateData property.
+- Filter the action results to select only the result data that should be added/merged back into the state data using its results property.
+- Select the part of state data which the action data results should be added/merged to using the toStateData property.
+
+To give an example, let's say we have an action which returns a list of breads and pasta types. For our workflow, we are only interested into breads and not the pasta.
+
+Action results:
+
+[source,json]
+----
+{
+  "breads": ["baguette", "brioche", "rye"],
+  "pasta": [ "penne",  "spaghetti", "ravioli"]
+}
+----
+
+We can use an action data filter to filter only the breads data:
+
+[source,json]
+----
+{
+   "actions":[
+    {
+       "functionRef": "breadAndPastaTypesFunction",
+       "actionDataFilter": {
+          "results": "${ {breads: .breads} }"
+       }
+    }
+ ]
+}
+----
+
+The `results` will filter the action results, which would then be:
+
+[source,json]
+----
+{
+  "breads": [
+    "baguette",
+    "brioche",
+    "rye"
+  ]
+}
+----
+
+Now let's take a look at a similar example (same expected action results) and assume our current state data is:
+
+[source,json]
+----
+{
+  "itemsToBuyAtStore": [ ]
+}
+----
+
+and have the following action definition:
+
+[source,json]
+----
+{
+   "actions":[
+    {
+       "functionRef": "breadAndPastaTypesFunction",
+       "actionDataFilter": {
+          "results": "${ [ .breads[0], .pasta[1] ] }",
+          "toStateData": "${ .itemsToBuyAtStore }"
+       }
+    }
+ ]
+}
+----
+
+In this case, our `results` select the first bread and the second element of the pasta array. The `toStateData` expression then selects the `itemsToBuyAtStore` array of the state data to add/merge these results into. With this, after our action executes the state data would be:
+
+[source,json]
+----
+{
+  "itemsToBuyAtStore": [
+    "baguette",
+    "spaghetti"
+  ]
+}
+----
+
+In the case action results should not be added/merged to state data, we can set the `useResults` property to `false`. In this case, the `results` and `toStateData` properties should be ignored, and nothing is added/merged to state data. If `useResults` is not specified (or it's value set to `true`), action results, if available, should be added/merged to state data.

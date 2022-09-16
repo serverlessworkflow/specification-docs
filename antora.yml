@@ -6,11 +6,14 @@ nav:
   - "modules/ROOT/nav.adoc"
 asciidoc:
   attributes:
-    spec_repo_versioned_url: https://github.com/serverlessworkflow/specification/blob/main
+    spec_repo_versioned_url: https://github.com/serverlessworkflow/specification/blob/0.8.x
     spec_releases_url: https://github.com/serverlessworkflow/specification/releases 
     cloudevents_url: https://cloudevents.io/
     openapi_url: https://www.openapis.org/
+    asyncaapi_url: https://www.asyncapi.com/docs/specifications/v2.1.0
     grpc_url: https://grpc.io/
+    protocol_buffers_url: https://developers.google.com/protocol-buffers/docs/overview
+    odata_url: https://www.odata.org/documentation/
     graphql_url: https://graphql.org/
     json_url: https://www.json.org/json-en.html
     yaml_url: https://yaml.org/
@@ -20,4 +23,3 @@ asciidoc:
     typescript_sdk_url: https://github.com/serverlessworkflow/sdk-typescript
     python_sdk_url: https://github.com/serverlessworkflow/sdk-python
     
-
