@@ -1,6 +1,6 @@
 name: specification
 title: "CNCF Serverless Workflow Specification"
-version: 0.8.0
+version: 0.8
 start_page: index.adoc
 nav:
   - "modules/ROOT/nav.adoc"
@@ -17,6 +17,8 @@ asciidoc:
     graphql_url: https://graphql.org/
     json_url: https://www.json.org/json-en.html
     yaml_url: https://yaml.org/
+    jq_url: https://stedolan.github.io/jq/
+    jq_version_1.6_url: https://github.com/stedolan/jq/releases/tag/jq-1.6
     go_sdk_url: https://github.com/serverlessworkflow/sdk-go
     java_sdk_url: https://github.com/serverlessworkflow/sdk-java
     dotnet_sdk_url: https://github.com/serverlessworkflow/sdk-net

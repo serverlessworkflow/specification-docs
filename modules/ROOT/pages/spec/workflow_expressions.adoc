@@ -1,1 +1,169 @@
 = Workflow Expressions
+
+:jq_manual_url: https://stedolan.github.io/jq/manual/
+
+Workflow model parameters can use expressions to select/manipulate workflow and/or state data.
+
+Note that different data filters play a big role as to which parts of the states data are to be used when the expression is evaluated. Reference the xref:spec/data/state_data_filters.adoc[State Data Filtering] section for more information about state data filters.
+
+By default, all workflow expressions should be defined using the link:{jq_url}[jq] link:{jq_version_1.6_url}[version 1.6] syntax. You can find more information on jq in its link:{jq_manual_url}[manual].
+
+Serverless Workflow does not mandate the use of jq and it's possible to use an expression language of your choice with the restriction that a single one must be used for all expressions in a workflow definition. If a different expression language needs to be used, make sure to set the workflow `expressionLang` property to identify it to runtime implementations.
+
+Note that using a non-default expression language could lower the portability of your workflow definitions across multiple container/cloud platforms.
+
+All workflow expressions in this document, xref:examples:index.adoc[specification examples] as well as xref:comparisions:index.adoc[comparisons examples] are written using the default jq syntax.
+
+Workflow expressions have the following format:
+
+[source,json]
+----
+${ expression }
+----
+
+Where `expression` can be either an in-line expression, or a reference to a defined xref:spec/functions/expression.adoc[expression function definition].
+
+To reference a defined xref:spec/functions/expression.adoc[expression function definition] the expression must have the following format, for example:
+
+[source,json]
+----
+${ fn:myExprFuncName }
+----
+
+Where `fn` is the namespace of the defined expression functions and `myExprName` is the unique expression function name.
+
+To show some expression examples, let's say we have the following state data:
+
+[source,json]
+----
+{
+  "applicant": {
+    "name": "John Doe",
+    "age"      : 26,
+    "email": "johndoe@something.com",
+    "address"  : {
+      "streetAddress": "Naist street",
+      "city"         : "Nara",
+      "postalCode"   : "630-0192"
+    },
+    "phoneNumbers": [
+      {
+        "type"  : "iPhone",
+        "number": "0123-4567-8888"
+      },
+      {
+        "type"  : "home",
+        "number": "0123-4567-8910"
+      }
+    ]
+  }
+}
+----
+
+In our workflow model we can define our reusable expression function:
+
+[source,json]
+----
+{
+"functions": [
+  {
+    "name": "IsAdultApplicant",
+    "operation": ".applicant | .age > 18",
+    "type": "expression"
+  }
+]}
+----
+
+We will get back to this function definition in just a bit, but now let's take a look at using an inline expression that sets an input parameter inside an action for example:
+
+[source,json]
+----
+{
+"actions": [
+    {
+        "functionRef": {
+            "refName": "confirmApplicant",
+            "parameters": {
+                "applicantName": "${ .applicant.name }"
+            }
+        }
+    }
+]}
+----
+
+
+In this case our input parameter `applicantName` would be set to "John Doe".
+
+Expressions can also be used to select and manipulate state data, this is in particularly useful for state data filters.
+
+For example let's use another inline expression:
+
+[source,json]
+----
+{
+   "stateDataFilter": {
+       "output": "${ .applicant | {applicant: .name, contactInfo: { email: .email, phone: .phoneNumbers }} }"
+   }
+}
+----
+
+This would set the data output of the particular state to:
+
+[source,json]
+----
+{
+  "applicant": "John Doe",
+  "contactInfo": {
+    "email": "johndoe@something.com",
+    "phone": [
+      {
+        "type": "iPhone",
+        "number": "0123-4567-8888"
+      },
+      {
+        "type": "home",
+        "number": "0123-4567-8910"
+      }
+    ]
+  }
+}
+----
+
+xref:spec/structure/states/switch.adoc[Switch state] xref:spec/structure/state_definitions/switch_state_data_condition.adoc[conditions] require for expressions to be resolved to a boolean value (true / false).
+
+We can now get back to our previously defined "IsAdultApplicant" expression function and reference it:
+
+[source,json]
+----
+{
+  "dataConditions": [ {
+    "condition": "${ fn:IsAdultApplicant }",
+    "transition": "StartApplication"
+  }]
+}
+----
+
+As previously mentioned, expressions are evaluated against certain subsets of data. For example the `parameters` param of the xref:spec/structure/state_definitions/functionref.adoc[functionRef] definition can evaluate expressions only against the data that is available to the  xref:spec/structure/state_definitions/action.adoc[action] it belongs to. One thing to note here are the top-level xref:spec/structure/workflow_definition_structure.adoc[workflow definition] parameters. Expressions defined in them can only be evaluated against the initial xref:spec/data/workflow_data.adoc#data_input[workflow data input].
+
+For example let's say that we have a workflow data input of:
+
+[source,json]
+----
+{
+   "inputVersion" : "1.0.0"
+}
+----
+
+we can use this expression in the workflow "version" parameter:
+
+[source,json]
+----
+{
+   "id": "MySampleWorkflow",
+   "name": "Sample Workflow",
+   "version": "${ .inputVersion }",
+   "specVersion": "0.8"
+}
+----
+
+which would set the workflow version to "1.0.0". Note that the workflow "id" property value is not allowed to use an expression. The workflow definition "id" must be a constant value.
