@@ -20,6 +20,7 @@
 **** xref:spec/structure/states/event.adoc[]
 **** xref:spec/structure/states/operation.adoc[]
 **** xref:spec/structure/states/switch.adoc[]
+**** xref:spec/structure/states/sleep.adoc[]
 **** xref:spec/structure/states/parallel.adoc[]
 **** xref:spec/structure/states/inject.adoc[]
 **** xref:spec/structure/states/foreach.adoc[]

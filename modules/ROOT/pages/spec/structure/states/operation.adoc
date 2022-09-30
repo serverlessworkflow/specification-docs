@@ -1,1 +1,120 @@
 = Operation State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|actionMode	
+|Should actions be performed sequentially or in parallel	
+|string
+|no
+
+|xref:spec/structure/state_definitions/action.adoc[actions]
+|Actions to be performed	
+|array
+|yes
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object	
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter	
+|object	
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]
+|States error handling and retries definitions	
+|array
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]
+|Next transition of the workflow after all the actions have been performed	
+|object	
+|yes (if end is not defined)
+
+|xref:spec/compensation.adoc[compensatedBy]
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean	
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]
+|Is this state an end state	
+|object	
+|no
+
+|xref:spec/metadata.adoc[metadata]
+|Metadata information	
+|object
+|no
+
+|===
+
+.Operation State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: RejectApplication
+type: operation
+actionMode: sequential
+actions:
+- functionRef:
+    refName: sendRejectionEmailFunction
+    arguments:
+      customer: "${ .customer }"
+end: true
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "name": "RejectApplication",
+    "type": "operation",
+    "actionMode": "sequential",
+    "actions": [
+        {
+            "functionRef": {
+                "refName": "sendRejectionEmailFunction",
+                "arguments": {
+                    "customer": "${ .customer }"
+                }
+            }
+        }
+    ],
+    "end": true
+}
+----
+--
+====
+
+Operation state defines a set of actions to be performed in sequence or in parallel. Once all actions have been performed, a transition to another state can occur.
+
+The `timeouts` property can be used to define state specific timeout settings. Operation states can define the `stateExecTimeout` and `actionExecTimeout` settings. For more information on Workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

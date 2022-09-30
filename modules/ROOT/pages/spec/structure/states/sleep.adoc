@@ -1,1 +1,95 @@
 = Sleep State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|duration	
+|Duration (ISO 8601 duration format) to sleep. For example: "PT15M" (sleep 15 minutes), or "P2DT3H4M" (sleep 2 days, 3 hours and 4 minutes)	
+|integer
+|yes
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object	
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter	
+|object	
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]	
+|States error handling and retries definitions	
+|array	
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]	
+|Next transition of the workflow after the sleep	
+|object	
+|yes (if end is not defined)
+
+|xref:spec/compensation.adoc[compensatedBy]	
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]		
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean	
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]
+|If this state an end state	
+|object	
+|no
+
+|===
+
+.Sleep State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: SleepFiveSeconds
+type: sleep
+duration: PT5S
+transition: GetJobStatus
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+      "name": "SleepFiveSeconds",
+      "type": "sleep",
+      "duration": "PT5S",
+      "transition": "GetJobStatus"
+}
+----
+--
+====
+
+Sleep state suspends workflow execution for a given time duration. The delay is defined in its `duration` property using the ISO 8601 duration format.
+
+The `timeouts` property allows you to define state-specific timeouts. It can be used to define the `stateExecTimeout`. For more information on workflow timeouts see the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.
