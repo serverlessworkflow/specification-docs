@@ -1,1 +1,87 @@
 = Function Definition
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|name
+|Unique function name	
+|string
+|yes
+
+|operation	
+|If type is rest, <path_to_openapi_definition>#<operation_id>. If type is asyncapi, <path_to_asyncapi_definition>#<operation_id>. If type is rpc, <path_to_grpc_proto_file>#<service_name>#<service_method>. If type is graphql, <url_to_graphql_endpoint>#<literal "mutation" or "query">#<query_or_mutation_name>. If type is odata, <URI_to_odata_service>#<Entity_Set_Name>. If type is expression, defines the workflow expression.	
+|string
+|no
+
+|type	
+|Defines the function type. Can be either `rest`, `asyncapi`, `rpc`, `graphql`, `odata`, `expression`, or xref:spec/functions/custom.adoc[`custom`]. Default is `rest`	
+|enum
+|no
+
+|authRef
+|References an xref:spec/structure/state_definitions/auth.adoc[auth definition] name to be used to access to resource defined in the operation parameter	
+|string	
+|no
+
+|xref:spec/metadata.adoc[metadata]		
+|Metadata information. Can be used to define custom function information	
+|object
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: HelloWorldFunction
+operation: https://hellworldservice.api.com/api.json#helloWorld
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+   "name": "HelloWorldFunction",
+   "operation": "https://hellworldservice.api.com/api.json#helloWorld"
+}
+----
+--
+====
+
+The `name` property defines an unique name of the function definition.
+
+The `type` property defines the function type. Its value can be either `rest` or `expression`. Default value is `rest`.
+
+Depending on the function `type`, the `operation` property can be:
+
+- If `type` is `rest`, a combination of the function/service OpenAPI definition document URI and the particular service operation that needs to be invoked, separated by a '#'. For example `https://petstore.swagger.io/v2/swagger.json#getPetById`.
+- If `type` is `asyncapi`, a combination of the AsyncApi definition document URI and the particular service operation that needs to be invoked, separated by a '#'. For example `file://streetlightsapi.yaml#onLightMeasured`.
+- If `type` is `rpc`, a combination of the gRPC proto document URI and the particular service name and service method name that needs to be invoked, separated by a '#'. For example `file://myuserservice.proto#UserService#ListUsers`.
+- If `type` is `graphql`, a combination of the GraphQL schema definition URI and the particular service name and service method name that needs to be invoked, separated by a '#'. For example `file://myuserservice.proto#UserService#ListUsers`.
+- If `type` is `odata`, a combination of the GraphQL schema definition URI and the particular service name and service method name that needs to be invoked, separated by a '#'. For example `https://https://services.odata.org/V3/OData/OData.svc#Products`.
+- If `type` is `expression`, defines the expression syntax. Take a look at the xref:spec/workflow_expressions.adoc[workflow expressions section] for more information on this.
+Defining custom function types is possible, for more information on that refer to the xref:spec/functions/custom.adoc[Defining custom function types] section.
+
+The `authRef` property references a name of a defined workflow xref:spec/structure/state_definitions/auth.adoc[auth definition]. It is used to provide authentication info to access the resource defined in the `operation` property.
+
+The `xref:spec/metadata.adoc[metadata]` property allows users to define custom information to function definitions. This allows you for example to define functions that describe of a command executions on a Docker image:
+
+[source,yaml]
+----
+functions:
+- name: whalesayimage
+  metadata:
+    image: docker/whalesay
+    command: cowsay
+----
+
+Note that using metadata for cases such as above heavily reduces the portability of your workflow markup.
+
+Function definitions themselves do not define data input parameters. Parameters can be defined via the `parameters` property in xref:spec/structure/state_definitions/functionref.adoc[function definitions] inside xref:spec/structure/state_definitions/action.adoc[actions].

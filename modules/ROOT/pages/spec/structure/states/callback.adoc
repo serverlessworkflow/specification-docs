@@ -1,1 +1,138 @@
 = Callback State
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|xref:spec/structure/state_definitions/action.adoc[action]	
+|Defines the action to be executed	
+|object
+|yes
+
+|eventRef	
+|References an unique callback event name in the defined workflow events	
+|string	
+|yes
+
+|xref:spec/workflow_timeouts.adoc[timeouts]		
+|State specific timeout settings	
+|object
+|no
+
+|xref:spec/data/event_data_filters.adoc[eventDataFilter]	
+|Callback event data filter definition	
+|object
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter definition	
+|object	
+|no
+
+|xref:spec/errors.adoc[onErrors]	
+|States error handling and retries definitions	
+|array
+|no 
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]	
+|Next transition of the workflow after callback event has been received	
+|object
+|yes
+
+|xref:spec/structure/state_definitions/end.adoc[end]	
+|Is this state an end state	
+|object	
+|no
+
+|xref:spec/compensation.adoc[compensatedBy]	
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]	
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean
+|no
+
+|xref:spec/metadata.adoc[metadata]	
+|Metadata information	
+|object	
+|no
+
+|===
+
+.Callback State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: CheckCredit
+type: callback
+action:
+  functionRef:
+    refName: callCreditCheckMicroservice
+    arguments:
+      customer: "${ .customer }"
+eventRef: CreditCheckCompletedEvent
+timeouts:
+  stateExecTimeout: PT15M
+transition: EvaluateDecision
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+        "name": "CheckCredit",
+        "type": "callback",
+        "action": {
+            "functionRef": {
+                "refName": "callCreditCheckMicroservice",
+                "arguments": {
+                    "customer": "${ .customer }"
+                }
+            }
+        },
+        "eventRef": "CreditCheckCompletedEvent",
+        "timeouts": {
+          "stateExecTimeout": "PT15M"
+        },
+        "transition": "EvaluateDecision"
+}
+----
+--
+====
+
+Serverless orchestration can at times require manual steps/decisions to be made. While some work performed in a serverless workflow can be executed automatically, some decisions must involve manual steps (e.g., human decisions). The Callback state allows you to explicitly model manual decision steps during workflow execution.
+
+The action property defines a function call that triggers an external activity/service. Once the action executes, the callback state will wait for a CloudEvent (defined via the `eventRef` property), which indicates the completion of the manual decision by the called service.
+
+Note that the called decision service is responsible for emitting the callback CloudEvent indicating the completion of the decision and including the decision results as part of the event payload. This event must be correlated to the workflow instance using the callback events context attribute defined in the `correlation` property of the referenced xref:spec/structure/state_definitions/event.adoc[Event Definition].
+
+Once the completion (callback) event is received, the Callback state completes its execution and transitions to the next defined workflow state or completes workflow execution in case it is an end state.
+
+The callback event payload is merged with the Callback state data and can be filtered via the "eventDataFilter" definition.
+
+If the defined callback event has not been received during this time period, the state should transition to the next state or end workflow execution if it is an end state.
+
+The `timeouts` property defines state specific timeout settings. Callback states can define the `stateExecTimeout`, `actionExecTimeout`, and `eventTimeout` properties. For more information on workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

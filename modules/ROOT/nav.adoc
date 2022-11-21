@@ -26,13 +26,13 @@
 **** xref:spec/structure/states/foreach.adoc[]
 **** xref:spec/structure/states/callback.adoc[]
 *** Related Stated Definitions
-**** Function Definition
-**** Event Definition
-**** Auth Definition
-**** Correlation Definition
-**** OnEvents Definition
-**** Action Definition
-**** Subflow Action
+**** xref:spec/structure/state_definitions/function.adoc[]
+**** xref:spec/structure/state_definitions/event.adoc[]
+**** xref:spec/structure/state_definitions/auth.adoc[]
+**** xref:spec/structure/state_definitions/correlation.adoc[]
+**** xref:spec/structure/state_definitions/onevents.adoc[]
+**** xref:spec/structure/state_definitions/action.adoc[]
+**** xref:spec/structure/state_definitions/subflowaction.adoc[]
 **** FunctionRef Definition
 **** EventRef Definition
 **** SubFlowRef Definition

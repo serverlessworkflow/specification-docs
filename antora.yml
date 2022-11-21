@@ -9,6 +9,7 @@ asciidoc:
     spec_repo_versioned_url: https://github.com/serverlessworkflow/specification/blob/0.8.x
     spec_releases_url: https://github.com/serverlessworkflow/specification/releases 
     cloudevents_url: https://cloudevents.io/
+    cloudevents_spec_url: https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md
     openapi_url: https://www.openapis.org/
     asyncaapi_url: https://www.asyncapi.com/docs/specifications/v2.1.0
     grpc_url: https://grpc.io/

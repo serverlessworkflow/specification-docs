@@ -1,0 +1,16 @@
+= Subflow Action
+
+Often you want to group your workflows into small logical units that solve a particular business problem and can be reused in multiple other workflow definitions.
+
+image::spec/subflowstateref.png[]
+
+Reusable workflows are referenced by their `id` property via the SubFlow action `workflowId` parameter.
+
+For the simple case, `subFlowRef` can be a string containing the `id` of the sub-workflow to invoke. If you want to specify other parameters then a xref:spec/structure/state_definitions/subflowref.adoc[subFlowRef] should be provided instead.
+
+Each referenced workflow receives the SubFlow actions data as workflow data input.
+
+Referenced sub-workflows must declare their own xref:spec/structure/state_definitions/function.adoc[function] and xref:spec/structure/state_definitions/event.adoc[event] definitions.
+
+
+

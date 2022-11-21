@@ -1,0 +1,54 @@
+= Correlation Definition
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|contextAttributeName
+|CloudEvent Extension Context Attribute name	
+|string
+|yes
+
+|contextAttributeValue	
+|CloudEvent Extension Context Attribute name	
+|string
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+correlation:
+- contextAttributeName: patientId
+- contextAttributeName: department
+  contextAttributeValue: UrgentCare
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+   "correlation": [
+       {
+         "contextAttributeName": "patientId"
+       },
+       {
+         "contextAttributeName": "department",
+         "contextAttributeValue" : "UrgentCare"
+       }
+     ]
+}
+----
+--
+====
+
+Used to define event correlation rules. Only usable for `consumed` event definitions.
+
+The contextAttributeName property defines the name of the CloudEvent link:{cloudevents_spec_url}#context-attributes[extension context attribute]. The `contextAttributeValue` property defines the value of the defined the CloudEvent link:{cloudevents_spec_url}#context-attributes[extension context attribute].
