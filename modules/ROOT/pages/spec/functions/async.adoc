@@ -1,0 +1,91 @@
+= Using Functions for Async API Service Invocations
+
+xref:spec/structure/state_definitions/function.adoc[Functions] can be used to invoke PUBLISH and SUBSCRIBE operations on a message broker documented by the link:{asyncaapi_url}[Async API Specification]. link:{asyncaapi_url}#operationObject[Async API operations] are bound to a link:{asyncaapi_url}#definitionsChannel[channel] which describes the technology, security mechanisms, input and validation to be used for their execution.
+
+Let's take a look at a hypothetical Async API document (assumed its stored locally with the file name `streetlightsapi.yaml`) and define a single publish operation:
+
+[source,yaml]
+----
+asyncapi: 2.1.0
+info:
+  title: Streetlights API
+  version: 1.0.0
+  description: |
+    The Smartylighting Streetlights API allows you
+    to remotely manage the city lights.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  mosquitto:
+    url: mqtt://test.mosquitto.org
+    protocol: mqtt
+channels:
+  light/measured:
+    publish:
+      summary: Inform about environmental lighting conditions for a particular streetlight.
+      operationId: onLightMeasured
+      message:
+        name: LightMeasured
+        payload:
+          type: object
+          properties:
+            id:
+              type: integer
+              minimum: 0
+              description: Id of the streetlight.
+            lumens:
+              type: integer
+              minimum: 0
+              description: Light intensity measured in lumens.
+            sentAt:
+              type: string
+              format: date-time
+              description: Date and time when the message was sent.
+----
+
+To define a workflow action invocation, we can then use the following workflow xref:spec/structure/state_definitions/function.adoc[Function Definition] and set the `operation` to `onLightMeasured`:
+
+[source,json]
+----
+{
+  "functions": [
+  {
+    "name": "publishLightMeasurements",
+    "operation": "file://streetlightsapi.yaml#onLightMeasured",
+    "type": "asyncapi"
+  }]
+}
+----
+
+Note that the xref:spec/structure/state_definitions/function.adoc[Function Definition]'s `operation` property must have the following format:
+
+[source]
+----
+<URI_to_asyncapi_file>#<OperationId>
+----
+
+Also note that the referenced function definition type in this case must have the value `asyncapi`.
+
+Our defined function definition can then we referenced in a workflow xref:spec/structure/state_definitions/action.adoc[action], for example:
+
+[source,json]
+----
+{
+  "name": "Publish Measurements",
+  "type": "operation",
+  "actions":[
+    {
+      "name": "Publish Light Measurements",
+      "functionRef":{
+        "refName": "publishLightMeasurements",
+        "arguments":{
+          "id": "${ .currentLight.id }",
+          "lumens": "${ .currentLight.lumens }",
+          "sentAt": "${ now }"
+        }
+      }
+    }
+  ]
+}
+----

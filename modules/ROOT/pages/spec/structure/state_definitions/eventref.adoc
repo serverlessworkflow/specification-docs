@@ -1,0 +1,78 @@
+= EventRef Definition
+
+Allows defining invocation of a function via event.
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|xref:spec/structure/state_definitions/event.adoc[triggerEventRef]
+|Reference to the unique name of a `produced` event definition	
+|string	
+|yes
+
+|xref:spec/structure/state_definitions/event.adoc[resultEventRef]
+|Reference to the unique name of a `consumed` event definition	
+|string	
+|yes
+
+|resultEventTimeout	
+|Maximum amount of time (ISO 8601 format) to wait for the result event. If not defined it will be set to the xref:spec/workflow_timeouts.adoc#timeout_definition[actionExecutionTimeout]	
+|string
+|no
+
+|data
+|If string type, an expression which selects parts of the states data output to become the data (payload) of the event referenced by `triggerEventRef`. If object type, a custom object to become the data (payload) of the event referenced by `triggerEventRef`.	
+|string or object	
+|no
+
+|contextAttributes
+|Add additional event extension context attributes to the trigger/produced event	
+|object
+|no
+
+|invoke
+|Specifies if the function should be invoked sync or async. Default is sync	
+|string	
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+eventRef:
+  triggerEventRef: MakeVetAppointment
+  data: "${ .patientInfo }"
+  resultEventRef: VetAppointmentInfo
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+   "eventRef": {
+      "triggerEventRef": "MakeVetAppointment",
+      "data": "${ .patientInfo }",
+      "resultEventRef":  "VetAppointmentInfo"
+   }
+}
+----
+--
+====
+
+References a `produced` and `consumed` xref:spec/structure/state_definitions/event.adoc[event definitions] via the "triggerEventRef" and `resultEventRef` properties, respectively.
+
+The `data` property can have two types: string or object. If it is of string type, it is an expression that can select parts of state data to be used as payload of the event referenced by `triggerEventRef`. If it is of object type, you can define a custom object to be the event payload.
+
+The `contextAttributes` property allows you to add one or more link:{cloudevents_spec_url}#context-attributes[extension context attributes] to the trigger/produced event.
+
+The `resultEventTimeout` property defines the maximum amount of time (ISO 8601 format) to wait for the result event. If not defined it should default to the xref:spec/workflow_timeouts.adoc#timeout-definition[`actionExecutionTimeout`]. If the event defined by the `resultEventRef` property is not received in that set time, action invocation should raise an error that can be handled in the states `onErrors` definition.
+
+The `invoke` property defines how the function is invoked (sync or async). Default value of this property is `sync`, meaning that workflow execution should wait until the function completes (the result event is received). If set to `async`, workflow execution should just produce the trigger event and should not wait for the result event. Note that in this case the action does not produce any results (payload of the result event) and the associated actions eventDataFilter as well as its retry definition, if defined, should be ignored. Functions that are invoked via events (sync or async) do not propagate their errors to the associated action definition and the workflow state, meaning that any errors that happen during their execution cannot be handled in the workflow states onErrors definition. Note that errors raised during functions that are invoked sync or async in this case should not fail workflow execution.

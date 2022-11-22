@@ -1,0 +1,214 @@
+= Event Definition
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|name
+|Unique event name	
+|string
+|yes
+
+|source
+|CloudEvent source	
+|string
+|yes if kind is set to "consumed", otherwise no
+
+|type
+|CloudEvent type	
+|string
+|yes
+
+|kind
+|Defines the event is either `consumed` or `produced` by the workflow. Default is `consumed`
+|enum
+|no
+
+|xref:spec/structure/state_definitions/correlation.adoc[correlation]	
+|Define event correlation rules for this event. Only used for consumed events	
+|array
+|no
+
+|dataOnly
+|If `true` (default value), only the Event payload is accessible to consuming Workflow states. If `false`, both event payload and context attributes should be accessible	
+|boolean
+|no
+
+|xref:spec/metadata.adoc[metadata]		
+|Metadata information.	
+|object
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: ApplicantInfo
+type: org.application.info
+source: applicationssource
+kind: consumed
+correlation:
+- contextAttributeName: applicantId
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+   "name": "ApplicantInfo",
+   "type": "org.application.info",
+   "source": "applicationssource",
+   "kind": "consumed",
+   "correlation": [
+    {
+      "contextAttributeName": "applicantId"
+    }
+   ]
+}
+----
+--
+====
+
+Used to define events and their correlations. These events can be either consumed or produced during workflow execution as well as can be used to xref:spec/structure/state_definitions/event.adoc[trigger function/service invocations].
+
+The Serverless Workflow specification mandates that all events conform to the link:{cloudevents_url}[CloudEvents specification]. This is to assure consistency and portability of the events format used.
+
+The `name` property defines a single name of the event that is unique inside the workflow definition. This event name can be then referenced within xref:spec/structure/state_definitions/function.adoc[function] and xref:spec/structure/states/workflow_states.adoc[state] definitions.
+
+The `source` property matches this event definition with the link:{cloudevents_spec_url}#source[source] property of the CloudEvent required attributes.
+
+The `type` property matches this event definition with the link:{cloudevents_spec_url}#type[type] property of the CloudEvent required attributes.
+
+The `kind` property defines this event as either `consumed` or `produced`. In terms of the workflow, this means it is either an event that triggers workflow instance creation, or continuation of workflow instance execution (`consumed`), or an event that the workflow instance creates during its execution (`produced`). The default value (if not specified) of the `kind` property is `consumed`. Note that for `produced` event definitions, implementations must provide the value of the CloudEvent source attribute. In this case (i.e., when the `kind` property is set to `produced`), the source property of the event definition is not required. Otherwise, (i.e., when the `kind` property is set to `consumed`), the source property must be defined in the event definition.
+
+Event correlation plays a big role in large event-driven applications. Correlating one or more events with a particular workflow instance can be done by defining the event correlation rules within the `correlation` property. This property is an array of xref:spec/structure/state_definitions/correlation.adoc[correlation] definitions. The CloudEvents specification allows users to add link:{cloudevents_spec_url}#context-attributes[Extension Context Attributes] and the correlation definitions can use these attributes to define clear matching event correlation rules. Extension context attributes are not part of the event payload, so they are serialized the same way as other standard required attributes. This means that the event payload does not have to be inspected by implementations in order to read and evaluate the defined correlation rules.
+
+Let's take a look at an example. Here we have two events that have an extension context attribute called "patientId" (as well as "department", which will be used in further examples below):
+
+[source,json]
+----
+{
+    "specversion" : "1.0",
+    "type" : "com.hospital.patient.heartRateMonitor",
+    "source" : "hospitalMonitorSystem",
+    "subject" : "HeartRateReading",
+    "id" : "A234-1234-1234",
+    "time" : "2020-01-05T17:31:00Z",
+    "patientId" : "PID-12345",
+    "department": "UrgentCare",
+    "data" : {
+      "value": "80bpm"
+    }
+}
+----
+
+and
+
+[source,json]
+----
+{
+    "specversion" : "1.0",
+    "type" : "com.hospital.patient.bloodPressureMonitor",
+    "source" : "hospitalMonitorSystem",
+    "subject" : "BloodPressureReading",
+    "id" : "B234-1234-1234",
+    "time" : "2020-02-05T17:31:00Z",
+    "patientId" : "PID-12345",
+    "department": "UrgentCare",
+    "data" : {
+      "value": "110/70"
+    }
+}
+----
+
+We can then define a correlation rule, through which all consumed events with the "hospitalMonitorSystem", and the "com.hospital.patient.heartRateMonitor" type that have the **same** value of the `patientId` property to be correlated to the created workflow instance:
+
+[source,json]
+----
+{
+"events": [
+ {
+  "name": "HeartRateReadingEvent",
+  "source": "hospitalMonitorSystem",
+  "type": "com.hospital.patient.heartRateMonitor",
+  "kind": "consumed",
+  "correlation": [
+    {
+      "contextAttributeName": "patientId"
+    }
+  ]
+ }
+]}
+----
+
+If a workflow instance is created (e.g., via Event state) by consuming a "HeartRateReadingEvent" event, all other consumed events from the defined source and with the defined type that have the same "patientId" as the event that triggered the workflow instance should then also be associated with the same instance.
+
+You can also correlate multiple events together. In the following example, we assume that the workflow consumes two different event types, and we want to make sure that both are correlated, as in the above example, with the same "patientId":
+
+[source,json]
+----
+{
+"events": [
+ {
+  "name": "HeartRateReadingEvent",
+  "source": "hospitalMonitorSystem",
+  "type": "com.hospital.patient.heartRateMonitor",
+  "kind": "consumed",
+  "correlation": [
+    {
+      "contextAttributeName": "patientId"
+    }
+  ]
+ },
+ {
+   "name": "BloodPressureReadingEvent",
+   "source": "hospitalMonitorSystem",
+   "type": "com.hospital.patient.bloodPressureMonitor",
+   "kind": "consumed",
+   "correlation": [
+       {
+         "contextAttributeName": "patientId"
+       }
+     ]
+  }
+]
+}
+----
+
+Event correlation can be based on equality (values of the defined "contextAttributeName" must be equal), but it can also be based on comparing it to custom defined values (string, or expression). For example:
+
+[source,json]
+----
+{
+"events": [
+ {
+  "name": "HeartRateReadingEvent",
+  "source": "hospitalMonitorSystem",
+  "type": "com.hospital.patient.heartRateMonitor",
+  "kind": "consumed",
+  "correlation": [
+    {
+      "contextAttributeName": "patientId"
+    },
+    {
+      "contextAttributeName": "department",
+      "contextAttributeValue" : "UrgentCare"
+    }
+  ]
+ }
+]
+}
+----
+
+In this example, we have two correlation rules defined: The first one is on the "patientId" CloudEvent context attribute, meaning again that all consumed events from this source and type must have the same "patientId" to be considered. The second rule says that these events must all have a context attribute named "department" with the value of "UrgentCare".
+
+This allows developers to write orchestration workflows that are specifically targeted to patients that are in the hospital urgent care unit, for example.
+
+The `dataOnly` property deals with what Event data is accessible by the consuming Workflow states. If its value is `true` (default value), only the Event payload is accessible to consuming Workflow states. If `false`, both Event payload and context attributes should be accessible.

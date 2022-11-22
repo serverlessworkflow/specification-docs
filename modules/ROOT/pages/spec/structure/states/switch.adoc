@@ -1,0 +1,124 @@
+= Switch State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|xref:spec/structure/state_definitions/switch_state_data_condition.adoc[dataConditions] or xref:spec/structure/state_definitions/switch_state_event_condition.adoc[eventConditions]
+|Defined if the Switch state evaluates conditions and transitions based on state data, or arrival of events.	
+|array
+|yes (one)
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter	
+|object
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]	
+|States error handling and retries definitions	
+|array
+|no
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object
+|no
+
+|defaultCondition	
+|Default transition of the workflow if there is no matching data conditions or event timeout is reached. Can be a transition or end definition	
+|object
+|no
+
+|xref:spec/compensation.adoc[compensatedBy]	
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]	
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean
+|no
+
+|xref:spec/metadata.adoc[metadata]	
+|Metadata information	
+|object
+|no
+
+|===
+
+.Event State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: CheckVisaStatus
+type: switch
+eventConditions:
+- eventRef: visaApprovedEvent
+  transition: HandleApprovedVisa
+- eventRef: visaRejectedEvent
+  transition: HandleRejectedVisa
+eventTimeout: PT1H
+defaultCondition:
+  transition: HandleNoVisaDecision
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+     "name":"CheckVisaStatus",
+     "type":"switch",
+     "eventConditions": [
+        {
+          "eventRef": "visaApprovedEvent",
+          "transition": "HandleApprovedVisa"
+        },
+        {
+          "eventRef": "visaRejectedEvent",
+          "transition": "HandleRejectedVisa"
+        }
+     ],
+     "eventTimeout": "PT1H",
+     "defaultCondition": {
+        "transition": "HandleNoVisaDecision"
+     }
+}
+----
+--
+====
+
+Switch states can be viewed as workflow gateways: they can direct transitions of a workflow based on certain conditions. There are two types of conditions for switch states:
+
+- xref:spec/structure/state_definitions/switch_state_data_condition.adoc[Data-based conditions]
+- xref:spec/structure/state_definitions/switch_state_event_condition.adoc[Event-based conditions]
+
+These are exclusive, meaning that a switch state can define one or the other condition type, but not both.
+
+At times multiple defined conditions can be evaluated to `true` by runtime implementations. Conditions defined first take precedence over conditions defined later. This is backed by the fact that arrays/sequences are ordered in both JSON and YAML. For example, let's say there are two `true` conditions: A and B, defined in that order. Because A was defined first, its transition will be executed, not B's.
+
+In case of data-based conditions definition, switch state controls workflow transitions based on the states data. If no defined conditions can be matched, the state transitions is taken based on the `defaultCondition` property. This property can be either a `transition` to another workflow state, or an `end` definition meaning a workflow end.
+
+For event-based conditions, a switch state acts as a workflow wait state. It halts workflow execution until one of the referenced events arrive, then making a transition depending on that event definition. If events defined in event-based conditions do not arrive before the states `eventTimeout` property expires, state transitions are based on the defined `defaultCondition` property.
+
+The `timeouts` property can be used to define state specific timeout settings. Switch states can define the `stateExecTimeout` setting. If `eventConditions` is defined, the switch state can also define the `eventTimeout` property. For more information on workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

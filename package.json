@@ -1,0 +1,24 @@
+{
+  "name": "specification-docs",
+  "description": "CNCF Serverless Workflow Specification",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serverlessworkflow/specification.git"
+  },
+  "keywords": [
+    "cncf",
+    "serverless workflow"
+  ],
+  "scripts": {
+    "local-install-build": "npm i && npx antora antora-playbook-author.yml --stacktrace",
+    "local-build": "npx antora antora-playbook-author.yml --stacktrace",
+    "install-build": "npm i && npx antora antora-playbook.yml --stacktrace",
+    "build": "npx antora antora-playbook.yml --stacktrace"
+  },
+  "dependencies": {
+    "@antora/cli": "3.0.3",
+    "@antora/site-generator": "3.0.3",
+    "@antora/lunr-extension": "^1.0.0-alpha.6"
+  }
+}

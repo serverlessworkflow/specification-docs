@@ -1,0 +1,98 @@
+= Workflow States
+
+Workflow states define building blocks of the workflow execution instructions. They define the control flow logic instructions on what the workflow is supposed to do. Serverless Workflow defines the following Workflow States:
+
+
+[cols="1,1,1,1,1,1,1,1,1,1"]
+|===
+|Name |Description |Consumes events?	|Produces events?	|Executes actions?	|Handles errors/retries?	|Allows parallel execution?	|Makes data-based transitions?	|Can be workflow start state?	|Can be workflow end state?
+
+|xref:spec/structure/states/event.adoc[Event]
+|Define events that trigger action execution	
+|yes
+|yes
+|yes
+|yes
+|yes
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/operation.adoc[Operation]
+|Execute one or more actions	
+|no
+|yes
+|yes
+|yes
+|yes
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/switch.adoc[Switch]
+|Define data-based or event-based workflow transitions	
+|no
+|yes
+|no
+|yes
+|no
+|yes
+|yes
+|no
+
+|xref:spec/structure/states/sleep.adoc[Sleep]	
+|Sleep workflow execution for a specific time duration	
+|no
+|yes
+|no
+|yes
+|no
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/parallel.adoc[Parallel]
+|Causes parallel execution of branches (set of states)	
+|no
+|yes
+|no
+|yes
+|yes
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/inject.adoc[Inject]
+|Inject static data into state data	
+|no
+|yes
+|no
+|yes
+|no
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/foreach.adoc[ForEach]
+|Parallel execution of states for each element of a data array	
+|no
+|yes
+|no
+|yes
+|yes
+|no
+|yes
+|yes
+
+|xref:spec/structure/states/callback.adoc[Callback]
+|Manual decision step. Executes a function and waits for callback event that indicates completion of the manual decision	
+|yes
+|yes
+|yes
+|yes
+|no
+|no
+|yes
+|yes
+
+|===

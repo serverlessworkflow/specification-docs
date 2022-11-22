@@ -1,0 +1,146 @@
+= Auth Definition
+
+Auth definitions can be used to define authentication information that should be applied to resources defined in the operation property of xref:spec/structure/state_definitions/function.adoc[function definitions]. It is not used as authentication information for the function invocation, but just to access the resource containing the function invocation information.
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|name
+|Unique auth definition name	
+|string
+|yes
+
+|scheme
+|Auth scheme, can be "basic", "bearer", or "oauth2". Default is "basic"	
+|enum
+|yes
+
+|properties	
+|Auth scheme properties. Can be one of "<<basic>>", "<<bearer>>", or "<<oauth2>>"	
+|object
+|yes
+
+|===
+
+The `name` property defines the unique auth definition name. The `dataOnly` property defines the auth scheme to be used. Cane be "bearer", "basic" or "oath2". The `dataOnly` property defines the auth scheme information. Can be one of "<<basic>>", "<<bearer>>", or "<<oauth2>>"
+
+[#basic]
+== Basic Properties Definition
+
+See link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme[here] for more information about Basic Authentication scheme.
+
+The Basic properties definition can have two types, either `string` or `object`. If `string` type, it defines a workflow expression referencing a xref:spec/structure/[workflow secret] that contains all needed Basic auth information. If `object` type, it has the following properties:
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|username
+|String or a workflow expression. Contains the user name	
+|string
+|yes
+
+|password
+|String or a workflow expression. Contains the user password	
+|string
+|yes
+
+|xref:spec/metadata.adoc[metadata]		
+|Metadata information.	
+|object
+|no
+
+|===
+
+[#bearer]
+== Bearer properties definition
+
+See link:https://datatracker.ietf.org/doc/html/rfc6750[here] for more information about Bearer Authentication scheme.
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|token	
+|String or a workflow expression. Contains the token information	
+|string
+|yes
+
+|xref:spec/metadata.adoc[metadata]		
+|Metadata information.	
+|object
+|no
+
+|===
+
+[#oauth2]
+== OAuth2 properties definition
+
+See link:https://oauth.net/2/[here] for more information about OAuth2 Authentication scheme.
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|authority
+|String or a workflow expression. Contains the authority information	
+|string
+|no
+
+|grantType
+|Defines the grant type. Can be "password", "clientCredentials", or "tokenExchange"	
+|enum
+|yes
+
+|clientId	
+|String or a workflow expression. Contains the client identifier	
+|string
+|yes
+
+|clientSecret
+|Workflow secret or a workflow expression. Contains the client secret	
+|string
+|no
+
+|scopes
+|Array containing strings or workflow expressions. Contains the OAuth2 scopes	
+|array
+|no
+
+|username	
+|String or a workflow expression. Contains the user name. Used only if grantType is 'resourceOwner'	
+|string
+|no
+
+|password
+|String or a workflow expression. Contains the user password. Used only if grantType is 'resourceOwner'	
+|string
+|no
+
+|audiences
+|Array containing strings or workflow expressions. Contains the OAuth2 audiences	
+|array
+|no
+
+|subjectToken	
+|String or a workflow expression. Contains the subject token	
+|string
+|no
+
+|requestedSubject	
+|String or a workflow expression. Contains the client identifier	
+|string
+|no
+
+|requestedIssuer
+|String or a workflow expression. Contains the requested issuer	
+|string
+|no
+
+|xref:spec/metadata.adoc[metadata]		
+|Metadata information.	
+|object
+|no
+
+|===

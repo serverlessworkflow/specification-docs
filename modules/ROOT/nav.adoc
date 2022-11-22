@@ -1,0 +1,73 @@
+* xref:overview.adoc[]
+* xref:spec/specification_details.adoc[]
+** xref:spec/data/workflow_data.adoc[]
+*** xref:spec/data/state_data_filters.adoc[]
+*** xref:spec/data/action_data_filters.adoc[]
+*** xref:spec/data/event_data_filters.adoc[]
+*** xref:spec/data/multiple_data_filters.adoc[]
+*** xref:spec/data/data_merging.adoc[]
+** xref:spec/functions/workflow_functions.adoc[]
+*** xref:spec/functions/rest.adoc[RESTFul]
+*** xref:spec/functions/async.adoc[Async API]
+*** xref:spec/functions/grpc.adoc[gRPC]
+*** xref:spec/functions/graphql.adoc[GraphQL]
+*** xref:spec/functions/odata.adoc[OData]
+*** xref:spec/functions/expression.adoc[Expressions]
+*** xref:spec/functions/custom.adoc[Custom Functions]
+** xref:spec/workflow_expressions.adoc[]
+** xref:spec/structure/workflow_definition_structure.adoc[]
+*** xref:spec/structure/states/workflow_states.adoc[]
+**** xref:spec/structure/states/event.adoc[]
+**** xref:spec/structure/states/operation.adoc[]
+**** xref:spec/structure/states/switch.adoc[]
+**** xref:spec/structure/states/sleep.adoc[]
+**** xref:spec/structure/states/parallel.adoc[]
+**** xref:spec/structure/states/inject.adoc[]
+**** xref:spec/structure/states/foreach.adoc[]
+**** xref:spec/structure/states/callback.adoc[]
+*** Related Stated Definitions
+**** xref:spec/structure/state_definitions/function.adoc[]
+**** xref:spec/structure/state_definitions/event.adoc[]
+**** xref:spec/structure/state_definitions/auth.adoc[]
+**** xref:spec/structure/state_definitions/correlation.adoc[]
+**** xref:spec/structure/state_definitions/onevents.adoc[]
+**** xref:spec/structure/state_definitions/action.adoc[]
+**** xref:spec/structure/state_definitions/subflowaction.adoc[]
+**** xref:spec/structure/state_definitions/functionref.adoc[]
+**** xref:spec/structure/state_definitions/eventref.adoc[]
+**** xref:spec/structure/state_definitions/subflowref.adoc[]
+**** xref:spec/structure/state_definitions/error.adoc[]
+**** Retry Definition
+**** Transition Definition
+**** Switch State Event Conditions
+**** Parallel State Branch
+**** Parallel State Handling Exceptions
+**** Start Definition
+**** Schedule Definition
+**** Cron Definition
+**** End Definition
+**** ProducedEvent Definition
+**** Transitions
+**** Additional Properties
+** xref:spec/errors.adoc[]
+** xref:spec/action_retries.adoc[]
+** xref:spec/workflow_timeouts.adoc[]
+** xref:spec/compensation.adoc[]
+** xref:spec/continue_as.adoc[]
+** xref:spec/versioning.adoc[]
+** xref:spec/constants.adoc[]
+** xref:spec/secrets.adoc[]
+** xref:spec/metadata.adoc[]
+* xref:extensions:index.adoc[]
+* xref:usecases:index.adoc[]
+* xref:examples:index.adoc[]
+* xref:comparisions:index.adoc[]
+* xref:references:index.adoc[]
+* xref:license.adoc[]
+// Create them in other GH repos
+* SDKs
+** Go SDK
+** Java SDK
+** .NET SDK
+** Typescript SDK
+** Python SDK

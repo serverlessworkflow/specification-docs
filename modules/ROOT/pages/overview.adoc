@@ -1,0 +1,40 @@
+= Overview
+
+Workflows allow us to capture and organize business requirements in a unified manner.
+They can bridge the gap between how we express and model business logic.
+
+A key component of workflows is the domain-specific language (DSL) we use to model our
+business logic and solutions. Selecting the appropriate workflow language for our business and technology domains is
+a very important decision to be considered.
+
+Serverless Workflow focuses on defining a **vendor-neutral**, **platform-independent**, and **declarative** workflow
+language that targets the serverless computing technology domain.
+It can be used to significantly bridge the gap between your unique business domain and the target technology domain.
+
+== Why we need a specification?
+
+The lack of a common way to define and model workflows means that we must constantly re-learn how to write them. This also limits the potential for common libraries, tooling and infrastructure to aid workflow modeling and execution across different platforms. Portability as well as productivity that can be achieved from workflow orchestration is hindered overall.
+
+Serverless Workflow addresses the need for a community-driven, vendor-neutral and a platform-independent workflow language specification that targets the serverless computing technology domain.
+
+Having and using a specification-based workflow language allows us to model our workflows once and deploy them onto many different container/cloud platforms, expecting the same execution results.
+
+image::spec/spec-goals.png[]
+
+== Focus on standards
+
+image::spec/spec-parts.png[]
+
+Serverless Workflow language takes advantage of well-established and known standards such as link:{cloudevents_url}[CloudEvents], link:{openapi_url}[OpenAPI] specifications, link:{grpc_url}[gRPC] and link:{graphql_url}[GraphQL].
+
+== Project Components
+
+image::spec/spec-overview.png[]
+
+The specification has multiple components:
+
+* Definitions of the workflow language. This is defined via the link:{spec_repo_versioned_url}/schema/workflow.json[Workflow JSON Schema]. You can use both
+  link:{json_url}[JSON] and link:{yaml_url}[YAML] formats to model your workflows.
+* Software Development Kits (SDKs) for link:{go_sdk_url}[Go], link:{java_sdk_url}[Java], link:{dotnet_sdk_url}[.NET], link:{typescript_sdk_url}[Typescript] and link:{python_sdk_url}[Python], and we plan to add them for more languages in the future.
+* Set of xref:extensions:index.adoc[Workflow Extensions] which allow users to define additional, non-execution-related workflow information. This information can be used to improve workflow performance. Some example workflow extensions include Key Performance Indicators (KPIs), Rate Limiting, Simulation, Tracing, etc.
+* Technology Compatibility Kit (TCK) to be used as a specification conformance tool for runtime implementations.

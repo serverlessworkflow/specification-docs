@@ -1,0 +1,57 @@
+= Error Definition
+
+[cols="1,3,1,1"]
+|===
+
+|errorRef
+|Reference to a unique workflow error definition	
+|string
+|yes if errorRefs is not used
+
+|errorRefs	
+|Reference one or more unique workflow error definition	
+|array
+|yes if errorRef is not used
+
+|xref:spec/structure/state_definitions/transition.adoc[transition] or xref:spec/structure/state_definitions/end.adoc[end]
+|Transition to next state to handle the error, or end workflow execution if this error is encountered	
+|object
+|yes
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+errorRef: Item not in inventory
+transition: IssueRefundToCustomer
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+   "errorRef": "Item not in inventory",
+   "transition": "IssueRefundToCustomer"
+}
+----
+--
+====
+
+Error definitions describe checked errors that can occur during workflow execution and how to handle them.
+
+The `errorRef` property references the unique workflow error definition. For more info on workflow error handling referece xref:spec/errors.adoc#defining_errors[this section].
+
+The `errorRefs` property references at least one of the defined workflow error definitions. Can be used when `errorRef` is not used. Usable when you want to define multiple error refs for which the same transition or end definition should be applied.For more info on workflow error handling referece xref:spec/errors.adoc#defining_errors[this section].
+
+The transition property defines the transition to the next workflow state in cases when the defined error happens during runtime execution.
+
+If `transition` is not defined you can also define the `end` property which will end workflow execution at that point.
+
+For more information, see the xref:spec/errors.adoc[Workflow Error Handling] section.

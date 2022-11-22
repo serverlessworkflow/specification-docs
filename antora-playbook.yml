@@ -1,0 +1,24 @@
+site:
+  title: CNCF Serverless Workflow Specification
+  start_page: spec::index.adoc
+antora:
+  extensions:
+    - require: "@antora/lunr-extension"
+      index_latest_only: true
+content:
+  sources:
+    - url: git@github.com:serverlessworkflow/specification.git
+      branches:
+        - main
+      start_path: docs/spec
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  supplemental_files: ./antora/supplemental-ui
+asciidoc:
+  extensions:
+  - ./lib/tabs
+  attributes:
+    linkattrs: ""
+    toc: ~

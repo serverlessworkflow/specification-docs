@@ -1,0 +1,15 @@
+= Workflow Functions
+
+Workflow xref:spec/structure/state_definitions/function.adoc[functions] are reusable definitions for service invocations and/or expression evaluation. They can be referenced by their domain-specific names inside workflow xref:spec/structure/states/workflow_states.adoc[states].
+
+Reference the following sections to learn more about workflow functions:
+
+- xref:spec/functions/rest.adoc[]
+- xref:spec/functions/async.adoc[]
+- xref:spec/functions/grpc.adoc[]
+- xref:spec/functions/graphql.adoc[]
+- xref:spec/functions/odata.adoc[]
+- xref:spec/functions/expression.adoc[]
+- xref:spec/functions/custom.adoc[]
+
+We can define if functions are invoked sync or async. Reference the xref:spec/structure/state_definitions/functionref.adoc[functionRef] to learn more on how to do this.

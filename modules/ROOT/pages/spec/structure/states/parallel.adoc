@@ -1,0 +1,158 @@
+= Parallel State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|xref:spec/structure/state_definitions/parallel_state_branch.adoc[branches]	
+|List of branches for this parallel state	
+|array
+|yes
+
+|completionType
+|Option types on how to complete branch execution. Default is "allOf"	
+|enum
+|no
+
+|numCompleted	
+|Used when branchCompletionType is set to atLeast to specify the least number of branches that must complete in order for the state to transition/end.	
+|string or number	
+|no
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter	
+|object
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]	
+|States error handling and retries definitions	
+|array
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]	
+|Next transition of the workflow after all branches have completed execution	
+|object
+|yes (if end is not defined)
+
+|xref:spec/compensation.adoc[compensatedBy]	
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]	
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean	
+|no
+
+|xref:spec/metadata.adoc[metadata]	
+|Metadata information	
+|object
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]	
+|If this state and end state	
+|object
+|no
+
+|===
+
+.Parallel State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: ParallelExec
+type: parallel
+completionType: allOf
+branches:
+- name: Branch1
+  actions:
+  - functionRef:
+      refName: functionNameOne
+      arguments:
+        order: "${ .someParam }"
+- name: Branch2
+  actions:
+  - functionRef:
+      refName: functionNameTwo
+      arguments:
+        order: "${ .someParam }"
+end: true
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+     "name":"ParallelExec",
+     "type":"parallel",
+     "completionType": "allOf",
+     "branches": [
+        {
+          "name": "Branch1",
+          "actions": [
+            {
+                "functionRef": {
+                    "refName": "functionNameOne",
+                    "arguments": {
+                        "order": "${ .someParam }"
+                    }
+                }
+            }
+        ]
+        },
+        {
+          "name": "Branch2",
+          "actions": [
+              {
+                  "functionRef": {
+                      "refName": "functionNameTwo",
+                      "arguments": {
+                          "order": "${ .someParam }"
+                      }
+                  }
+              }
+          ]
+        }
+     ],
+     "end": true
+}
+----
+--
+====
+
+Parallel state defines a collection of `branches` that are executed in parallel. A parallel state can be seen a state which splits up the current workflow instance execution path into multiple ones, one for each branch. These execution paths are performed in parallel and are joined back into the current execution path depending on the defined `completionType` parameter value.
+
+The "completionType" enum specifies the different ways of completing branch execution:
+
+- allOf: All branches must complete execution before the state can transition/end. This is the default value in case this parameter is not defined in the parallel state definition.
+- atLeast: State can transition/end once at least the specified number of branches have completed execution. In this case you must also specify the `numCompleted` property to define this number.
+
+Exceptions may occur during execution of branches of the Parallel state, this is described in detail in xref:spec/structure/state_definitions/parallel_state_handling_exceptions.adoc[this section].
+
+The `timeouts` property can be used to set state specific timeout settings. Parallel states can define the `stateExecTimeout` and `branchExecTimeout` timeout settings. For more information on workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

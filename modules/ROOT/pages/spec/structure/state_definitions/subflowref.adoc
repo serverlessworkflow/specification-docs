@@ -1,0 +1,70 @@
+= SubflowRef Definition
+
+`SubFlowRef` definition can have two types, namely `string` or `object`.
+
+If `string` type, it defines the unique id of the sub-workflow to be invoked. This short-hand definition can be used if sub-workflow lookup is done only by its `id` property and not its `version` property.
+
+[source,json]
+----
+"subFlowRef": "mySubFlowId"
+----
+
+If you need to define the `version` properties, you can use its object type:
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|workflowId
+|Sub-workflow unique id
+|string
+|yes
+
+|version
+|Sub-workflow version	
+|string
+|no
+
+|invoke	
+|Specifies if the subflow should be invoked sync or async. Default is sync	
+|string
+|no
+
+|onParentComplete	
+|If invoke is 'async', specifies how subflow execution should behave when parent workflow completes. Default is 'terminate'	
+|string
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+workflowId: handleApprovedVisaWorkflowID
+version: '2.0'
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "workflowId": "handleApprovedVisaWorkflowID",
+    "version": "2.0"
+}
+----
+--
+====
+
+The `workflowId` property defined the unique ID of the sub-workflow to be invoked.
+
+The `version` property defined the unique version of the sub-workflow to be invoked. If this property is defined, runtimes should match both the `id` and the `version` properties defined in the sub-workflow definition.
+
+The `invoke` property defines how the subflow is invoked (sync or async). Default value of this property is `sync`, meaning that workflow execution should wait until the subflow completes. If set to `async`, workflow execution should just invoke the subflow and not wait for its results. Note that in this case the action does not produce any results, and the associated actions actionDataFilter as well as its retry definition, if defined, should be ignored. Subflows that are invoked async do not propagate their errors to the associated action definition and the workflow state, meaning that any errors that happen during their execution cannot be handled in the workflow states onErrors definition. Note that errors raised during subflows that are invoked async should not fail workflow execution.
+
+The `onParentComplete` property defines how subflow execution that is invoked async should behave if the parent workflow completes execution before the subflow completes its own execution. The default value of this property is `terminate`, meaning that if the parent workflow (the workflow that invoked the subflow) completes, execution of the subflow should be terminated. If it is set to `continue`, if the parent workflow completes, the subflow execution is allowed to continue its own execution.

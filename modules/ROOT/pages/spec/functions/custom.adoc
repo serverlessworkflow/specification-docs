@@ -1,0 +1,52 @@
+= Defining custom function types
+
+:typescript_url: https://www.typescriptlang.org/
+
+xref:spec/structure/state_definitions/function.adoc[Function Definitions] `type` property defines a list of function types that are set by the specification.
+
+Some runtime implementations might support additional function types that extend the ones defined in the specification. In those cases you can define a custom function type with for example:
+
+[source,json]
+----
+{
+"functions": [
+  {
+    "name": "sendOrderConfirmation",
+    "operation": "/path/to/my/script/order.ts#myFunction",
+    "type": "custom"
+  }
+]}
+----
+
+In this example we define a custom function type that is meant to execute an external link:{typescript_url}[TypeScript] script.
+
+When a custom function type is specified, the operation property value has a **custom format**, meaning that its format is controlled by the runtime which provides the custom function type.
+
+Later, the function should be able to be used in an action as any other function supported by the specification:
+
+[source,json]
+----
+[{
+  "states": [{
+      "name": "handleOrder",
+      "type": "operation",
+      "actions": [
+        {
+          "name": "sendOrderConfirmation",
+          "functionRef": {
+            "refName": "sendOrderConfirmation",
+            "arguments": {
+              "order": "${ .order }"
+            }
+          }
+        }
+      ],
+      "transition": "emailCustomer"
+  }]
+}]
+----
+
+[WARNING]
+====
+Custom function types are not portable across runtimes.
+====

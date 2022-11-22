@@ -1,0 +1,121 @@
+= Action Definition
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id	
+|Unique action identifier	
+|string
+|no
+
+|name
+|Action name	
+|string	
+|no
+
+|xref:spec/structure/state_definitions/functionref.adoc[functionRef]	
+|References a reusable function definition	
+|object	
+|yes if `eventRef` & `subFlowRef` are not defined
+
+|xref:spec/structure/state_definitions/eventref.adoc[eventRef]	
+|References a trigger and result reusable event definitions	
+|object
+|yes if functionRef & subFlowRef are not defined
+
+|xref:spec/structure/state_definitions/subflowref.adoc[subFlowRef]	
+|References a workflow to be invoked	
+|object or string	
+|yes if eventRef & functionRef are not defined
+
+|xref:spec/structure/state_definitions/retry.adoc[retryRef]	
+|References a defined workflow retry definition. If not defined uses the default runtime retry definition	
+|string
+|no
+
+|nonRetryableErrors	
+|List of references to defined xref:spec/errors.adoc[[workflow errors] for which the action should not be retried. Used only when `autoRetries` is set to `true`	
+|array
+|no
+
+|retryableErrors
+|List of references to defined xref:spec/errors.adoc[workflow errors] for which the action should be retried. Used only when `autoRetries` is set to `false`
+|array
+|no
+
+|xref:spec/data/action_data_filters.adoc[actionDataFilter]
+|Action data filter definition	
+|object
+|no
+
+|sleep	
+|Defines time periods workflow execution should sleep before / after function execution	
+|object
+|no
+
+|xref:spec/workflow_expressions.adoc[condition]
+|Expression, if defined, must evaluate to true for this action to be performed. If false, action is disregarded	
+|boolean
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: Finalize Application Action
+functionRef:
+  refName: finalizeApplicationFunction
+  arguments:
+    applicantid: "${ .applicantId }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "name": "Finalize Application Action",
+    "functionRef": {
+        "refName": "finalizeApplicationFunction",
+        "arguments": {
+            "applicantid": "${ .applicantId }"
+        }
+    }
+}
+----
+--
+====
+
+Actions specify invocations of services or other workflows during workflow execution. Service invocation can be done in two different ways:
+
+- Reference xref:spec/structure/state_definitions/function.adoc[functions definitions] by its unique name using the `functionRef` property.
+- Reference a `produced` and `consumed` xref:spec/structure/state_definitions/event.adoc[event definitions] via the `eventRef` property.
+- Reference a sub-workflow invocation via the `subFlowRef` property.
+
+Note that `functionRef`, `eventRef`, and `subFlowRef` are mutually exclusive, meaning that only of of them can be specified in a single action definition.
+
+The `name` property specifies the action name. The `id` property specifies the unique action id.
+
+In the event-based scenario a service, or a set of services we want to invoke are not exposed via a specific resource URI for example, but can only be invoked via an event. The xref:spec/structure/state_definitions/eventref.adoc[eventRef] property defines the referenced `produced` event via its `triggerEventRef` property and a `consumed` event via its `resultEventRef` property.
+
+The `sleep` property can be used to define time periods that workflow execution should sleep before and/or after function execution. It can have two properties:
+
+- `before` - defines the amount of time (ISO 8601 duration format) to sleep before function invocation.
+- `after` - defines the amount of time (ISO 8601 duration format) to sleep after function invocation.
+
+Function invocation timeouts should be handled via the states xref:spec/workflow_timeouts.adoc[timeouts] definition.
+
+The `retryRef` property references one of the defined workflow retries by it's unique name. If not set, the action should be retried according to the default retry policy of the runtime implementation. For more information about workflow retries reference xref:spec/structure/state_definitions/retry.adoc[this section].
+
+The `nonRetryableErrors` property is a list that references one or more unique names of workflow error definitions. This is the list of known errors for which the action should not be retried for. It should be used only when the workflow top-level `autoRetries` property is set to `true`.
+
+The `retryableErrors` property is a list that references one or more unique names of workflow error definitions. This is the list of known errors for which the action should be retried for. It should be used only when the workflow top-level `autoRetries` property is set to `false`.
+
+The `condition` property is a xref:spec/workflow_expressions.adoc[workflow expression]. If defined, it must evaluate to true for this action to be performed. If it evaluates to `false` the action is skipped. If the `condition` property is not defined, the action is always performed.

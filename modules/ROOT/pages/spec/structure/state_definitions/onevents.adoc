@@ -1,0 +1,113 @@
+= OnEvents Definition
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|eventRefs
+|References one or more unique event names in the defined workflow xref:spec/structure/state_definitions/event.adoc[events]
+|array
+|yes
+
+|actionMode
+|Specifies how actions are to be performed (in sequence or in parallel). Default is "sequential"	
+|string
+|no
+
+|xref:spec/structure/state_definitions/action.adoc[actions]	
+|Actions to be performed	
+|array
+|no
+
+|xref:spec/data/event_data_filters.adoc[eventDataFilter]
+|Event data filter definition	
+|object	
+|no
+
+|===
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+eventRefs:
+- HighBodyTemperature
+actions:
+- functionRef:
+    refName: sendTylenolOrder
+    arguments:
+      patientid: "${ .patientId }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "eventRefs": ["HighBodyTemperature"],
+    "actions": [{
+        "functionRef": {
+            "refName": "sendTylenolOrder",
+            "arguments": {
+                "patientid": "${ .patientId }"
+            }
+        }
+    }]
+}
+----
+--
+====
+
+OnEvent definition allow you to define which xref:spec/structure/state_definitions/action.adoc[actions] are to be performed for the one or more xref:spec/structure/state_definitions/event.adoc[events definitions] defined in the eventRefs array. Note that the values of `eventRefs` array must be unique.
+
+The `actionMode` property defines if the defined actions need to be performed sequentially or in parallel.
+
+The `actions` property defines a list of actions to be performed.
+
+When specifying the `onEvents` definition it is important to consider the Event states `exclusive` property, because it determines how 'onEvents' is interpreted. Let's look at the following JSON definition of 'onEvents' to show this:
+
+[source,json]
+----
+{
+  "onEvents":[
+    {
+      "eventRefs":[
+        "HighBodyTemperature",
+        "HighBloodPressure"
+      ],
+      "actions":[
+        {
+          "functionRef":{
+            "refName":"SendTylenolOrder",
+            "arguments":{
+              "patient":"${ .patientId }"
+            }
+          }
+        },
+        {
+          "functionRef":{
+            "refName":"CallNurse",
+            "arguments":{
+              "patient":"${ .patientId }"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+----
+
+Depending on the value of the Event states exclusive property, this definition can mean two different things:
+
+1. If `exclusive` is set to "true", the consumption of either the `HighBodyTemperature` or `HighBloodPressure` events will trigger action execution.
+
+2. If `exclusive` is set to "false", the consumption of both the `HighBodyTemperature` and `HighBloodPressure` events will trigger action execution.
+
+This is visualized in the diagram below:
+
+image::spec/event-state-onevents-example.png[]

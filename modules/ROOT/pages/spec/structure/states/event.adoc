@@ -1,0 +1,174 @@
+= Event State
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|exclusive
+|If "true", consuming one of the defined events causes its associated actions to be performed. If "false", all of the defined events must be consumed in order for actions to be performed. Default is "true"	
+|boolean	
+|no
+
+|xref:spec/structure/state_definitions/onevents.adoc[onEvents]	
+|Define the events to be consumed and optional actions to be performed	
+|array
+|yes
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]
+|State data filter definition	
+|object	
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]
+|Next transition of the workflow after all the actions have been performed	
+|object
+|yes
+
+|xref:spec/errors.adoc[onErrors]
+|States error handling definitions	
+|array	
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]
+|Is this state an end state	
+|object	
+|no
+
+|xref:spec/compensation.adoc[compensatedBy]
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/metadata.adoc[metadata]
+|Metadata information	
+|object
+|no
+
+|===
+
+.Event State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: MonitorVitals
+type: event
+exclusive: true
+onEvents:
+- eventRefs:
+  - HighBodyTemperature
+  actions:
+  - functionRef:
+      refName: sendTylenolOrder
+      arguments:
+        patientid: "${ .patientId }"
+- eventRefs:
+  - HighBloodPressure
+  actions:
+  - functionRef:
+      refName: callNurse
+      arguments:
+        patientid: "${ .patientId }"
+- eventRefs:
+  - HighRespirationRate
+  actions:
+  - functionRef:
+      refName: callPulmonologist
+      arguments:
+        patientid: "${ .patientId }"
+end:
+  terminate: true
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+"name": "MonitorVitals",
+"type": "event",
+"exclusive": true,
+"onEvents": [{
+        "eventRefs": ["HighBodyTemperature"],
+        "actions": [{
+            "functionRef": {
+                "refName": "sendTylenolOrder",
+                "arguments": {
+                    "patientid": "${ .patientId }"
+                }
+            }
+        }]
+    },
+    {
+        "eventRefs": ["HighBloodPressure"],
+        "actions": [{
+            "functionRef": {
+                "refName": "callNurse",
+                "arguments": {
+                    "patientid": "${ .patientId }"
+                }
+            }
+        }]
+    },
+    {
+        "eventRefs": ["HighRespirationRate"],
+        "actions": [{
+            "functionRef": {
+                "refName": "callPulmonologist",
+                "arguments": {
+                    "patientid": "${ .patientId }"
+                }
+            }
+        }]
+    }
+],
+"end": {
+    "terminate": true
+}}
+----
+--
+====
+
+Event states await one or more events and perform actions when they are received. If defined as the workflow starting state, the event state definition controls when the workflow instances should be created.
+
+The `exclusive` property determines if the state should wait for any of the defined events in the `onEvents` array, or if all defined events must be present for their associated actions to be performed.
+
+Following two figures illustrate the `exclusive` property:
+
+image::spec/event-state-exclusive-true.png[]
+
+If the Event state in this case is a workflow starting state, the occurrence of _any_ of the defined events would start a new workflow instance.
+
+image::spec/event-state-exclusive-false.png[]
+
+If the Event state in this case is a workflow starting state, the occurrence of _all_ defined events would start a new workflow instance.
+
+In order to consider only events that are related to each other, we need to set the `correlation` property in the workflow xref:spec/structure/state_definitions/event.adoc[events definitions]. This allows us to set up event correlation rules against the events extension context attributes.
+
+If the Event state is not a workflow starting state, the `timeout` property can be used to define the time duration from the invocation of the event state. If the defined event, or events have not been received during this time, the state should transition to the next state or can end the workflow execution (if it is an end state).
+
+The `timeouts` property can be used to define state specific timeout settings. Event states can define the `stateExecTimeout`, `actionExecTimeout`, and `eventTimeout` properties. For more information about Event state specific event timeout settings reference xref:spec/workflow_timeouts.adoc#event_timeout_definition[this section]. For more information about workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

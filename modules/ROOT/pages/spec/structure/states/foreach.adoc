@@ -1,0 +1,288 @@
+= ForEach State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|inputCollection
+|Workflow expression selecting an array element of the states data	
+|string
+|yes
+
+|outputCollection	
+|Workflow expression specifying an array element of the states data to add the results of each iteration	
+|string
+|no
+
+|iterationParam
+|Name of the iteration parameter that can be referenced in actions/workflow. For each parallel iteration, this param should contain an unique element of the inputCollection array	
+|string	
+|no
+
+|batchSize
+|Specifies how many iterations may run in parallel at the same time. Used if mode property is set to parallel (default). If not specified, its value should be the size of the inputCollection	
+|string or number	
+|no
+
+|mode	
+|Specifies how iterations are to be performed (sequentially or in parallel). Default is parallel	
+|string
+|no
+
+|xref:spec/structure/state_definitions/action.adoc[actions]	
+|Actions to be executed for each of the elements of inputCollection	
+|array
+|yes
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object	
+|no
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter definition	
+|object
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]	
+|States error handling and retries definitions	
+|array
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]	
+|Next transition of the workflow after state has completed	
+|object
+|yes (if end is not defined)
+
+|xref:spec/compensation.adoc[compensatedBy]	
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]	
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean	
+|no
+
+|xref:spec/metadata.adoc[metadata]	
+|Metadata information	
+|object
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]
+|Is this state an end state	
+|object	
+|no
+
+|===
+
+.ForEach State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: ProvisionOrdersState
+type: foreach
+inputCollection: "${ .orders }"
+iterationParam: "singleorder"
+outputCollection: "${ .provisionresults }"
+actions:
+- functionRef:
+    refName: provisionOrderFunction
+    arguments:
+      order: "${ .singleorder }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "name": "ProvisionOrdersState",
+    "type": "foreach",
+    "inputCollection": "${ .orders }",
+    "iterationParam": "singleorder",
+    "outputCollection": "${ .provisionresults }",
+    "actions": [
+        {
+            "functionRef": {
+                "refName": "provisionOrderFunction",
+                "arguments": {
+                    "order": "${ .singleorder }"
+                }
+            }
+        }
+    ]
+}
+----
+--
+====
+
+ForEach states can be used to execute xref:spec/structure/state_definitions/action.adoc[actions] for each element of a data set.
+
+Each iteration of the ForEach state is by default executed in parallel by default. However, executing iterations sequentially is also possible by setting the value of the `mode` property to `sequential`.
+
+The `mode` property defines if iterations should be done sequentially or in parallel. By default, if `mode` is not specified, iterations should be done in parallel.
+
+If the default `parallel` iteration mode is used, the `batchSize` property to the number of iterations (batch) that can be executed at a time. To give an example, if the number of iterations is 55 and `batchSize` is set to `10`, 10 iterations are to be executed at a time, meaning that the state would execute 10 iterations in parallel, then execute the next batch of 10 iterations. After 5 such executions, the remaining 5 iterations are to be executed in the last batch. The batch size value must be greater than 1. If not specified, its value should be the size of the `inputCollection` (all iterations).
+
+The `inputCollection` property is a workflow expression which selects an array in the states data. All iterations are performed against data elements of this array. If this array does not exist, the runtime should throw an error. This error can be handled inside the states xref:spec/structure/state_definitions/error.adoc[onErrors] definition.
+
+The `outputCollection` property is a workflow expression which selects an array in the state data where the results of each iteration should be added to. If this array does not exist, it should be created.
+
+The `iterationParam` property defines the name of the iteration parameter passed to each iteration of the ForEach state. It should contain the unique element of the `inputCollection` array and made available to actions of the ForEach state. If `iterationParam` is not explicitly defined, runtimes should create one and populate it with the value of the unique iteration parameter for each iteration of the ForEach state.
+
+The `actions` property defines actions to be executed in each state iteration.
+
+Let's take a look at an example:
+
+In this example the data input to our workflow is an array of orders:
+
+[source,json]
+----
+{
+    "orders": [
+        {
+            "orderNumber": "1234",
+            "completed": true,
+            "email": "firstBuyer@buyer.com"
+        },
+        {
+            "orderNumber": "5678",
+            "completed": true,
+            "email": "secondBuyer@buyer.com"
+        },
+        {
+            "orderNumber": "9910",
+            "completed": false,
+            "email": "thirdBuyer@buyer.com"
+        }
+    ]
+}
+----
+
+and our workflow is defined as:
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+id: sendConfirmWorkflow
+name: SendConfirmationForCompletedOrders
+version: '1.0'
+specVersion: '0.8'
+start: SendConfirmState
+functions:
+- name: sendConfirmationFunction
+  operation: file://confirmationapi.json#sendOrderConfirmation
+states:
+- name: SendConfirmState
+  type: foreach
+  inputCollection: "${ [.orders[] | select(.completed == true)] }"
+  iterationParam: completedorder
+  outputCollection: "${ .confirmationresults }"
+  actions:
+  - functionRef:
+      refName: sendConfirmationFunction
+      arguments:
+        orderNumber: "${ .completedorder.orderNumber }"
+        email: "${ .completedorder.email }"
+  end: true
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+  "id": "sendConfirmWorkflow",
+  "name": "SendConfirmationForCompletedOrders",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "start": "SendConfirmState",
+  "functions": [
+  {
+    "name": "sendConfirmationFunction",
+    "operation": "file://confirmationapi.json#sendOrderConfirmation"
+  }
+  ],
+  "states": [
+  {
+      "name":"SendConfirmState",
+      "type":"foreach",
+      "inputCollection": "${ [.orders[] | select(.completed == true)] }",
+      "iterationParam": "completedorder",
+      "outputCollection": "${ .confirmationresults }",
+      "actions":[
+      {
+       "functionRef": {
+         "refName": "sendConfirmationFunction",
+         "arguments": {
+           "orderNumber": "${ .completedorder.orderNumber }",
+           "email": "${ .completedorder.email }"
+         }
+       }
+      }],
+      "end": true
+  }]
+}
+----
+--
+====
+
+The workflow data input containing order information is passed to the `SendConfirmState` xref:spec/structure/states/foreach.adoc[ForEach] state. The ForEach state defines an `inputCollection` property which selects all orders that have the `completed` property set to `true`.
+
+For each element of the array selected by `inputCollection` a JSON object defined by `iterationParam` should be created containing an unique element of `inputCollection` and passed as the data input to the parallel executed actions.
+
+So for this example, we would have two parallel executions of the `sendConfirmationFunction`, the first one having data:
+
+[source,json]
+----
+{
+    "completedorder": {
+        "orderNumber": "1234",
+        "completed": true,
+        "email": "firstBuyer@buyer.com"
+    }
+}
+----
+
+and the second:
+
+[source,json]
+----
+{
+    "completedorder": {
+        "orderNumber": "5678",
+        "completed": true,
+        "email": "secondBuyer@buyer.com"
+    }
+}
+----
+
+The results of each parallel action execution are stored as elements in the state data array defined by the `outputCollection` property.
+
+The `timeouts` property can be used to set state specific timeout settings. ForEach states can define the `stateExecTimeout` and `actionExecTimeout` settings. For more information on workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

@@ -1,0 +1,58 @@
+= Using Functions for RPC Service Invocations
+
+Similar to defining invocations of operations on RESTful services, you can also use the workflow xref:spec/structure/state_definitions/function.adoc[functions definitions] that follow the remote procedure call (RPC) protocol. For RPC invocations, the Serverless Workflow specification mandates that they are described using link:{grpc_url}[gRPC], a widely used RPC system. gRPC uses link:{protocol_buffers_url}[Protocol Buffers] to define messages, services, and the methods on those services that can be invoked.
+
+Let's look at an example of invoking a service method using RPC. For this example let's say we have the following gRPC protocol buffer definition in a myuserservice.proto file:
+
+[source,protobuf]
+----
+service UserService {
+    rpc AddUser(User) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/users"
+            body: "*"
+        };
+    }
+    rpc ListUsers(ListUsersRequest) returns (stream User) {
+        option (google.api.http) = {
+            get: "/api/v1/users"
+        };
+    }
+    rpc ListUsersByRole(UserRole) returns (stream User) {
+        option (google.api.http) = {
+            get: "/api/v1/users/role"
+        };
+    }
+    rpc UpdateUser(UpdateUserRequest) returns (User) {
+        option (google.api.http) = {
+            patch: "/api/v1/users/{user.id}"
+            body: "*"
+        };
+    }
+}
+----
+
+In our workflow definition, we can then use function definitions:
+
+[source,json]
+----
+{
+    "functions": [
+    {
+        "name": "listUsers",
+        "operation": "file://myuserservice.proto#UserService#ListUsers",
+        "type": "rpc"
+    }]
+}
+----
+
+Note that the `operation` property has the following format:
+
+[source,json]
+----
+<URI_to_proto_file>#<Service_Name>#<Service_Method_Name>
+----
+
+Note that the referenced function definition type in this case must be `rpc`.
+
+For more information about functions, reference the xref:spec/structure/state_definitions/function.adoc[Function Definition] section.

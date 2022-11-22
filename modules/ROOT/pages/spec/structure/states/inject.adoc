@@ -1,0 +1,264 @@
+= Inject State
+
+[cols="2,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|id
+|Unique state id	
+|string	
+|no
+
+|name
+|State name	
+|string
+|yes
+
+|type	
+|State type	
+|string
+|yes
+
+|data
+|JSON object which can be set as state's data input and can be manipulated via filter	
+|object
+|yes
+
+|xref:spec/data/state_data_filters.adoc[stateDataFilter]	
+|State data filter	
+|object	
+|no
+
+|xref:spec/structure/state_definitions/transition.adoc[transition]
+|Next transition of the workflow after injection has completed	
+|object
+|yes (if end is set to false)
+
+|xref:spec/workflow_timeouts.adoc[timeouts]	
+|State specific timeout settings	
+|object
+|no
+
+|xref:spec/structure/state_definitions/error.adoc[onErrors]	
+|States error handling and retries definitions	
+|array
+|no
+
+|xref:spec/compensation.adoc[compensatedBy]		
+|Unique name of a workflow state which is responsible for compensation of this state	
+|string
+|no
+
+|xref:spec/compensation.adoc[usedForCompensation]	
+|If true, this state is used to compensate another state. Default is "false"	
+|boolean
+|no
+
+|xref:spec/metadata.adoc[metadata]	
+|Metadata information	
+|object
+|no
+
+|xref:spec/structure/state_definitions/end.adoc[end]	
+|If this state and end state	
+|object
+|no
+
+|===
+
+.Inject State Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: Hello
+type: inject
+data:
+  result: Hello
+transition: World
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+     "name":"Hello",
+     "type":"inject",
+     "data": {
+        "result": "Hello"
+     },
+     "transition": "World"
+}
+----
+--
+====
+
+Inject state can be used to inject static data into state data input. Inject state does not perform any actions. It is very useful for debugging, for example, as you can test/simulate workflow execution with pre-set data that would typically be dynamic in nature (e.g., function calls, events).
+
+The inject state `data` property allows you to statically define a JSON object which gets added to the states data input. You can use the filter property to control the states data output to the transition state.
+
+Here is a typical example of how to use the inject state to add static data into its states data input, which then is passed as data output to the transition state:
+
+.Example of how to use the Inject State
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: SimpleInjectState
+type: inject
+data:
+person:
+    fname: John
+    lname: Doe
+    address: 1234 SomeStreet
+    age: 40
+transition: GreetPersonState
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+ "name":"SimpleInjectState",
+ "type":"inject",
+ "data": {
+    "person": {
+      "fname": "John",
+      "lname": "Doe",
+      "address": "1234 SomeStreet",
+      "age": 40
+    }
+ },
+ "transition": "GreetPersonState"
+}
+----
+--
+====
+
+The data output of the "SimpleInjectState" which then is passed as input to the transition state would be:
+
+[source,json]
+----
+{
+ "person": {
+      "fname": "John",
+      "lname": "Doe",
+      "address": "1234 SomeStreet",
+      "age": 40
+ }
+}
+----
+
+If the inject state already receives a data input from the previous transition state, the inject data should be merged with its data input.
+
+You can also use the filter property to filter the state data after data is injected. Let's say we have:
+
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+name: SimpleInjectState
+type: inject
+data:
+people:
+- fname: John
+    lname: Doe
+    address: 1234 SomeStreet
+    age: 40
+- fname: Marry
+    lname: Allice
+    address: 1234 SomeStreet
+    age: 25
+- fname: Kelly
+    lname: Mill
+    address: 1234 SomeStreet
+    age: 30
+stateDataFilter:
+output: "${ {people: [.people[] | select(.age < 40)]} }"
+transition: GreetPersonState
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "name":"SimpleInjectState",
+    "type":"inject",
+    "data": {
+        "people": [
+            {
+                "fname": "John",
+                "lname": "Doe",
+                "address": "1234 SomeStreet",
+                "age": 40
+            },
+            {
+                "fname": "Marry",
+                "lname": "Allice",
+                "address": "1234 SomeStreet",
+                "age": 25
+            },
+            {
+                "fname": "Kelly",
+                "lname": "Mill",
+                "address": "1234 SomeStreet",
+                "age": 30
+            }
+        ]
+     },
+     "stateDataFilter": {
+        "output": "${ {people: [.people[] | select(.age < 40)]} }"
+     },
+     "transition": "GreetPersonState"
+}
+----
+--
+====
+
+In which case the states data output would include only people whose age is less than 40:
+
+[source,json]
+----
+{
+  "people": [
+    {
+      "fname": "Marry",
+      "lname": "Allice",
+      "address": "1234 SomeStreet",
+      "age": 25
+    },
+    {
+      "fname": "Kelly",
+      "lname": "Mill",
+      "address": "1234 SomeStreet",
+      "age": 30
+    }
+  ]
+}
+----
+
+You can change your output path easily during testing, for example change the expression to:
+
+[source,json]
+----
+${ {people: [.people[] | select(.age >= 40)]} }
+----
+
+This allows you to test if your workflow behaves properly for cases when there are people whose age is greater or equal 40.
+
+The `timeouts` property can be used to define state specific timeout settings. Inject states can define the `stateExecTimeout` property. For more information on workflow timeouts reference the xref:spec/workflow_timeouts.adoc[Workflow Timeouts] section.

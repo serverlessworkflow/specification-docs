@@ -1,0 +1,125 @@
+= State Data Filters
+
+[cols="1,3,1,1"]
+|===
+|Parameter  |Description |Type |Required
+
+|input
+|Workflow expression to filter the states data input
+|string
+|no
+
+|output
+|Workflow expression that filters the states data output
+|string
+|no
+|=== 
+
+// TODO: investigate why the title it's not being rendered
+.State Data Filters Example Definition
+[tabs]
+====
+YAML::
++
+--
+[source,yaml]
+----
+stateDataFilter:
+  input: "${ .orders }"
+  output: "${ .provisionedOrders }"
+----
+--
+JSON::
++
+--
+[source,json]
+----
+{
+    "stateDataFilter": {
+      "input": "${ .orders }",
+      "output": "${ .provisionedOrders }"
+    }
+}
+----
+--
+====
+
+State data filters can be used to filter the state's data input and output.
+
+The state data filters `input` property expression is applied when the workflow transitions to the current state and receives its data input. It can be used to select only data that is needed and disregard what is not needed. If `input` is not defined or does not select any parts of the state's data input, its data input is not filtered.
+
+The state data filter `output` property expression is applied right before the state transitions to the next state defined. It filters the state's data output to be passed as data input to the transitioning state. If the current state is the workflow end state, the filtered state's data output becomes the workflow data output. If `output` is not defined or does not select any parts of the state's data output, its data output is not filtered.
+
+Results of the `input` expression should become the state data. Results of the `output` expression should become the state data output.
+
+For more information on this you can reference the xref:spec/data/data_merging.adoc[data merging] section.
+
+Let's take a look at some examples of state filters. For our examples let's say the data input to our state is as follows:
+
+[source,json]
+----
+{
+  "fruits": [ "apple", "orange", "pear" ],
+  "vegetables": [
+    {
+      "veggieName": "potato",
+      "veggieLike": true
+    },
+    {
+      "veggieName": "broccoli",
+      "veggieLike": false
+    }
+  ]
+}
+----
+
+For the first example, our state only cares about fruits data, and we want to disregard the vegetables. To do this we can define a state filter:
+
+[source,json]
+----
+{
+  "stateDataFilter": {
+    "input": "${ {fruits: .fruits} }"
+  }
+}
+----
+
+The state data output then would include only the fruits data:
+
+[source,json]
+----
+{
+  "fruits": [ "apple", "orange", "pear"]
+}
+----
+
+image::spec/state-data-filter-example1.png[]
+
+For our second example, let's say that we are interested in the only vegetable "veggie-like". Here we have two ways of filtering our data, depending on if actions within our state need access to all vegetables, or only the ones that are "veggie-like".
+
+The first way would be to use both "input", and "output":
+
+[source,json]
+----
+{
+  "stateDataFilter": {
+    "input": "${ {vegetables: .vegetables} }",
+    "output": "${ {vegetables: .vegetables[] | select(.veggieLike == true)} }"
+  }
+}
+----
+
+The states data input filter selects all the vegetables from the main data input. Once all actions have performed, before the state transition or workflow execution completion (if this is an end state), the "output" of the state filter selects only the vegetables which are "veggie like".
+
+image::spec/state-data-filter-example2.png[]
+
+The second way would be to directly filter only the "veggie like" vegetables with just the data input path:
+
+[source,json]
+----
+{
+  "stateDataFilter": {
+    "input": "${ {vegetables: .vegetables[] | select(.veggieLike == true)} }"
+  }
+}
+----
