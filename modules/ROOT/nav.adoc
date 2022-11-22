@@ -33,10 +33,10 @@
 **** xref:spec/structure/state_definitions/onevents.adoc[]
 **** xref:spec/structure/state_definitions/action.adoc[]
 **** xref:spec/structure/state_definitions/subflowaction.adoc[]
-**** FunctionRef Definition
-**** EventRef Definition
-**** SubFlowRef Definition
-**** Error Definitinition
+**** xref:spec/structure/state_definitions/functionref.adoc[]
+**** xref:spec/structure/state_definitions/eventref.adoc[]
+**** xref:spec/structure/state_definitions/subflowref.adoc[]
+**** xref:spec/structure/state_definitions/error.adoc[]
 **** Retry Definition
 **** Transition Definition
 **** Switch State Event Conditions

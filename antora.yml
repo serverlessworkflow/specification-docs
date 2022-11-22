@@ -16,6 +16,7 @@ asciidoc:
     protocol_buffers_url: https://developers.google.com/protocol-buffers/docs/overview
     odata_url: https://www.odata.org/documentation/
     graphql_url: https://graphql.org/
+    graphql_spec_url: https://spec.graphql.org/June2018/
     json_url: https://www.json.org/json-en.html
     yaml_url: https://yaml.org/
     jq_url: https://stedolan.github.io/jq/
